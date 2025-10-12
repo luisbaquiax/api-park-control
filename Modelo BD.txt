@@ -1,0 +1,566 @@
+-- ======================================
+-- MODELO DE BASE DE DATOS - PARKCONTROL
+-- Sistema de Gestión de Parqueos Multi-Sucursal
+-- ======================================
+
+-- ======================================
+-- USUARIOS Y AUTENTICACIÓN (Existente)
+-- ======================================
+CREATE TABLE PERSONA (
+    id_persona BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    fecha_nacimiento DATE NOT NULL,
+    dpi VARCHAR(20) NOT NULL UNIQUE,
+    correo VARCHAR(150) NOT NULL UNIQUE,
+    telefono VARCHAR(20),
+    direccion_completa TEXT,
+    ciudad VARCHAR(100),
+    pais VARCHAR(100) DEFAULT 'Guatemala',
+    codigo_postal VARCHAR(10),
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo'
+);
+
+CREATE TABLE ROL (
+    id_rol INT PRIMARY KEY AUTO_INCREMENT,
+    nombre_rol VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Roles: SUCURSAL, BACKOFFICE, CLIENTE, SISTEMA(Usuario Empresa)
+);
+
+CREATE TABLE USUARIO (
+    id_usuario BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_persona BIGINT NOT NULL,
+    id_rol INT NOT NULL,
+    nombre_usuario VARCHAR(50) NOT NULL UNIQUE,
+    contrasenia_hash VARCHAR(255) NOT NULL,
+    debe_cambiar_contrasenia BOOLEAN DEFAULT TRUE,
+    doble_factor_habilitado BOOLEAN DEFAULT FALSE,
+    intentos_fallidos INT DEFAULT 0,
+    ultima_fecha_acceso TIMESTAMP NULL,
+    estado ENUM('activo', 'inactivo', 'suspendido') DEFAULT 'activo',
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_ultima_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_persona) REFERENCES PERSONA(id_persona) ON DELETE CASCADE,
+    FOREIGN KEY (id_rol) REFERENCES ROL(id_rol) ON DELETE RESTRICT,
+
+);
+
+CREATE TABLE TOKEN_AUTENTICACION (
+    id_token BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_usuario BIGINT NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    tipo_token ENUM('verificacion_email', 'reset_password', '2fa', 'login') NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_expiracion TIMESTAMP NOT NULL,
+    estado ENUM('activo', 'usado', 'expirado') DEFAULT 'activo',
+    codigo_verificacion VARCHAR(10),
+    FOREIGN KEY (id_usuario) REFERENCES USUARIO(id_usuario) ON DELETE CASCADE,
+);
+
+-- ======================================
+-- EMPRESA Y CONFIGURACIÓN GLOBAL
+-- ======================================
+CREATE TABLE EMPRESA (
+    id_empresa INT PRIMARY KEY AUTO_INCREMENT,
+	id_usuario_empresa INT NOT NULL
+    nombre_comercial VARCHAR(150) NOT NULL,
+    razon_social VARCHAR(200) NOT NULL,
+    nit VARCHAR(20) NOT NULL UNIQUE,
+    direccion_fiscal TEXT,
+    telefono_principal VARCHAR(20),
+    correo_principal VARCHAR(150),
+    estado ENUM('activa', 'inactiva') DEFAULT 'activa',
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_ultima_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	FOREIGN KEY (id_usuario_empresa) REFERENCES USUARIO(id_usuario) ON DELETE CASCADE
+);
+
+-- ======================================
+-- CONFIGURACIÓN DE TARIFAS
+-- ======================================
+CREATE TABLE TARIFA_BASE (
+    id_tarifa_base INT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa INT NOT NULL,
+    precio_por_hora DECIMAL(10, 2) NOT NULL,
+    moneda VARCHAR(3) DEFAULT 'GTQ',
+    fecha_vigencia_inicio TIMESTAMP NOT NULL,
+    fecha_vigencia_fin TIMESTAMP NULL,
+    estado ENUM('vigente', 'historico', 'programado') DEFAULT 'programado',
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa) REFERENCES EMPRESA(id_empresa) ON DELETE CASCADE
+);
+
+CREATE TABLE BITACORA_TARIFA_BASE (
+    id_bitacora_tarifa BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_tarifa_base INT NOT NULL,
+    accion ENUM('creacion', 'actualizacion', 'activacion', 'desactivacion') NOT NULL,
+    precio_anterior DECIMAL(10, 2),
+    precio_nuevo DECIMAL(10, 2),
+    usuario_responsable BIGINT NOT NULL,
+    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    observaciones TEXT,
+    FOREIGN KEY (id_tarifa_base) REFERENCES TARIFA_BASE(id_tarifa_base) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_responsable) REFERENCES USUARIO(id_usuario)
+);
+
+-- ======================================
+-- SUCURSALES Y UBICACIONES
+-- ======================================
+CREATE TABLE SUCURSAL (
+    id_sucursal INT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa INT NOT NULL,
+	id_usuario_sucursal INT NOT NULL,
+    nombre VARCHAR(150) NOT NULL,
+    direccion_completa TEXT NOT NULL,
+    ciudad VARCHAR(100) NOT NULL,
+    departamento VARCHAR(100),
+    latitud DECIMAL(10, 8),
+    longitud DECIMAL(11, 8),
+    hora_apertura TIME NOT NULL,
+    hora_cierre TIME NOT NULL,
+    capacidad_2_ruedas INT NOT NULL,
+    capacidad_4_ruedas INT NOT NULL,
+    telefono_contacto VARCHAR(20),
+    correo_contacto VARCHAR(150),
+    estado ENUM('activa', 'inactiva', 'mantenimiento') DEFAULT 'activa',
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_ultima_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa) REFERENCES EMPRESA(id_empresa) ON DELETE CASCADE,
+	FOREIGN KEY (id_usuario_sucursal) REFERENCES USUARIO(id_usuario) ON DELETE CASCADE,
+	
+);
+
+CREATE TABLE TARIFA_SUCURSAL (
+    id_tarifa_sucursal INT PRIMARY KEY AUTO_INCREMENT,
+    id_sucursal INT NOT NULL,
+    precio_por_hora DECIMAL(10, 2) NOT NULL,
+    moneda VARCHAR(3) DEFAULT 'GTQ',
+    fecha_vigencia_inicio TIMESTAMP NOT NULL,
+    fecha_vigencia_fin TIMESTAMP NULL,
+    estado ENUM('vigente', 'historico', 'programado') DEFAULT 'programado',
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_sucursal) REFERENCES SUCURSAL(id_sucursal) ON DELETE CASCADE
+);
+
+CREATE TABLE BITACORA_TARIFA_SUCURSAL (
+    id_bitacora_tarifa_sucursal BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_tarifa_sucursal INT NOT NULL,
+    accion ENUM('creacion', 'actualizacion', 'activacion', 'desactivacion') NOT NULL,
+    precio_anterior DECIMAL(10, 2),
+    precio_nuevo DECIMAL(10, 2),
+    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    observaciones TEXT,
+    FOREIGN KEY (id_tarifa_sucursal) REFERENCES TARIFA_SUCURSAL(id_tarifa_sucursal) ON DELETE CASCADE
+);
+
+-- ======================================
+-- PLANES DE SUSCRIPCIÓN
+-- ======================================
+CREATE TABLE TIPO_PLAN (
+    id_tipo_plan INT PRIMARY KEY AUTO_INCREMENT,
+    nombre_plan VARCHAR(50) NOT NULL UNIQUE,
+    codigo_plan VARCHAR(20) NOT NULL UNIQUE,
+    descripcion TEXT,
+    horas_mensuales INT NOT NULL,
+    dias_aplicables VARCHAR(50), -- 'L-V', 'L-D', etc.
+    cobertura_horaria VARCHAR(100), -- 'nocturna', 'completa', etc.
+    orden_beneficio INT NOT NULL, -- 1=Full Access, 5=Nocturno
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE CONFIGURACION_DESCUENTO_PLAN (
+    id_config_descuento INT PRIMARY KEY AUTO_INCREMENT,
+    id_tipo_plan INT NOT NULL,
+    descuento_mensual DECIMAL(5, 2) NOT NULL, -- A, C, E, G, J
+    descuento_anual_adicional DECIMAL(5, 2) NOT NULL, -- B, D, F, H, K
+    fecha_vigencia_inicio TIMESTAMP NOT NULL,
+    fecha_vigencia_fin TIMESTAMP NULL,
+    estado ENUM('vigente', 'historico', 'programado') DEFAULT 'programado',
+    creado_por BIGINT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_tipo_plan) REFERENCES TIPO_PLAN(id_tipo_plan) ON DELETE CASCADE,
+    FOREIGN KEY (creado_por) REFERENCES USUARIO(id_usuario)
+);
+
+CREATE TABLE BITACORA_CONFIGURACION_DESCUENTO (
+    id_bitacora_descuento BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_config_descuento INT NOT NULL,
+    accion ENUM('creacion', 'actualizacion', 'activacion', 'desactivacion') NOT NULL,
+    descuento_mensual_anterior DECIMAL(5, 2),
+    descuento_mensual_nuevo DECIMAL(5, 2),
+    descuento_anual_anterior DECIMAL(5, 2),
+    descuento_anual_nuevo DECIMAL(5, 2),
+    usuario_responsable BIGINT NOT NULL,
+    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    observaciones TEXT,
+    FOREIGN KEY (id_config_descuento) REFERENCES CONFIGURACION_DESCUENTO_PLAN(id_config_descuento) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_responsable) REFERENCES USUARIO(id_usuario)
+);
+
+-- ======================================
+-- VEHÍCULOS Y CLIENTES
+-- ======================================
+CREATE TABLE VEHICULO (
+    id_vehiculo BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_propietario BIGINT NOT NULL, -- FK a PERSONA
+    placa VARCHAR(20) NOT NULL UNIQUE,
+    tipo_vehiculo ENUM('2R', '4R') NOT NULL,
+    marca VARCHAR(50),
+    modelo VARCHAR(50),
+    anio INT,
+    color VARCHAR(30),
+    estado ENUM('activo', 'inactivo', 'vendido', 'robado') DEFAULT 'activo',
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_ultima_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_propietario) REFERENCES PERSONA(id_persona) ON DELETE CASCADE
+);
+
+-- ======================================
+-- SUSCRIPCIONES
+-- ======================================
+CREATE TABLE SUSCRIPCION (
+    id_suscripcion BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa INT NOT NULL,
+    id_usuario BIGINT NOT NULL,
+    id_vehiculo BIGINT NOT NULL,
+    id_tipo_plan INT NOT NULL,
+    id_tarifa_base_referencia INT NOT NULL, -- Tarifa "congelada"
+    periodo_contratado ENUM('mensual', 'anual') NOT NULL,
+    descuento_aplicado DECIMAL(5, 2) NOT NULL, -- Descuento total calculado
+    precio_plan DECIMAL(10, 2) NOT NULL,
+    horas_mensuales_incluidas INT NOT NULL,
+    horas_consumidas DECIMAL(8, 2) DEFAULT 0,
+    fecha_inicio TIMESTAMP NOT NULL,
+    fecha_fin TIMESTAMP NOT NULL,
+    fecha_compra TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado ENUM('activa', 'vencida', 'cancelada', 'suspendida') DEFAULT 'activa',
+    metodo_pago VARCHAR(50),
+    numero_transaccion VARCHAR(100),
+    FOREIGN KEY (id_empresa) REFERENCES EMPRESA(id_empresa) ON DELETE RESTRICT,
+    FOREIGN KEY (id_usuario) REFERENCES USUARIO(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_vehiculo) REFERENCES VEHICULO(id_vehiculo) ON DELETE RESTRICT,
+    FOREIGN KEY (id_tipo_plan) REFERENCES TIPO_PLAN(id_tipo_plan) ON DELETE RESTRICT,
+    FOREIGN KEY (id_tarifa_base_referencia) REFERENCES TARIFA_BASE(id_tarifa_base) ON DELETE RESTRICT
+);
+
+CREATE TABLE HISTORIAL_CONSUMO_SUSCRIPCION (
+    id_historial_consumo BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_suscripcion BIGINT NOT NULL,
+    id_ticket BIGINT, -- Se relacionará después con TICKET
+    horas_consumidas DECIMAL(8, 2) NOT NULL,
+    horas_comercio DECIMAL(8, 2) DEFAULT 0, -- Horas no consumidas por comercio afiliado
+    fecha_consumo TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_suscripcion) REFERENCES SUSCRIPCION(id_suscripcion) ON DELETE CASCADE
+);
+
+-- ======================================
+-- CAMBIOS DE PLACA Y PERMISOS ESPECIALES
+-- ======================================
+CREATE TABLE SOLICITUD_CAMBIO_PLACA (
+    id_solicitud_cambio BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_suscripcion BIGINT NOT NULL,
+    id_vehiculo_actual BIGINT NOT NULL,
+    placa_nueva VARCHAR(20) NOT NULL,
+    motivo ENUM('venta', 'robo', 'siniestro', 'otro') NOT NULL,
+    descripcion_motivo TEXT,
+    fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado ENUM('pendiente', 'aprobada', 'rechazada', 'cancelada') DEFAULT 'pendiente',
+    revisado_por BIGINT, -- Operador BackOffice
+    fecha_revision TIMESTAMP NULL,
+    observaciones_revision TEXT,
+    fecha_efectiva TIMESTAMP NULL,
+    FOREIGN KEY (id_suscripcion) REFERENCES SUSCRIPCION(id_suscripcion) ON DELETE CASCADE,
+    FOREIGN KEY (id_vehiculo_actual) REFERENCES VEHICULO(id_vehiculo),
+    FOREIGN KEY (revisado_por) REFERENCES USUARIO(id_usuario)
+);
+
+CREATE TABLE EVIDENCIA_CAMBIO_PLACA (
+    id_evidencia BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_solicitud_cambio BIGINT NOT NULL,
+    tipo_documento ENUM('denuncia', 'traspaso', 'tarjeta_circulacion', 'identificacion', 'otro') NOT NULL,
+    nombre_archivo VARCHAR(255) NOT NULL,
+    url_documento TEXT NOT NULL,
+    descripcion TEXT,
+    fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_solicitud_cambio) REFERENCES SOLICITUD_CAMBIO_PLACA(id_solicitud_cambio) ON DELETE CASCADE
+);
+
+CREATE TABLE PERMISO_TEMPORAL (
+    id_permiso_temporal BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_suscripcion BIGINT NOT NULL,
+    placa_temporal VARCHAR(20) NOT NULL,
+    tipo_vehiculo_permitido ENUM('2R', '4R') NOT NULL,
+    motivo TEXT NOT NULL,
+    fecha_inicio TIMESTAMP NOT NULL,
+    fecha_fin TIMESTAMP NOT NULL,
+    usos_maximos INT,
+    usos_realizados INT DEFAULT 0,
+    sucursales_validas TEXT, -- JSON o CSV de IDs de sucursales (NULL = todas)
+    estado ENUM('activo', 'expirado', 'revocado', 'agotado') DEFAULT 'activo',
+    aprobado_por BIGINT NOT NULL,
+    fecha_aprobacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    observaciones TEXT,
+    FOREIGN KEY (id_suscripcion) REFERENCES SUSCRIPCION(id_suscripcion) ON DELETE CASCADE
+);
+
+-- ======================================
+-- COMERCIOS AFILIADOS
+-- ======================================
+CREATE TABLE COMERCIO_AFILIADO (
+    id_comercio BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nombre_comercial VARCHAR(150) NOT NULL,
+    razon_social VARCHAR(200) NOT NULL,
+    nit VARCHAR(20) NOT NULL UNIQUE,
+    tipo_comercio VARCHAR(50), -- restaurante, tienda, cine, banco, etc.
+    telefono VARCHAR(20),
+    correo_contacto VARCHAR(150),
+    estado ENUM('activo', 'inactivo', 'suspendido') DEFAULT 'activo',
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE CONVENIO_COMERCIO_SUCURSAL (
+    id_convenio BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_comercio BIGINT NOT NULL,
+    id_sucursal INT NOT NULL,
+    horas_gratis_maximo DECIMAL(5, 2) NOT NULL,
+    periodo_corte ENUM('diario', 'semanal', 'mensual', 'anual') NOT NULL,
+    tarifa_por_hora DECIMAL(10, 2) NOT NULL, -- Lo que el comercio paga a la empresa
+    fecha_inicio_convenio DATE NOT NULL,
+    fecha_fin_convenio DATE NULL,
+    estado ENUM('activo', 'inactivo', 'vencido') DEFAULT 'activo',
+    creado_por BIGINT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_comercio) REFERENCES COMERCIO_AFILIADO(id_comercio) ON DELETE CASCADE,
+    FOREIGN KEY (id_sucursal) REFERENCES SUCURSAL(id_sucursal) ON DELETE CASCADE,
+    FOREIGN KEY (creado_por) REFERENCES USUARIO(id_usuario)
+);
+
+-- ======================================
+-- TICKETS DE PARQUEO
+-- ======================================
+CREATE TABLE TICKET (
+    id_ticket BIGINT PRIMARY KEY AUTO_INCREMENT,
+    folio_numerico VARCHAR(20) NOT NULL UNIQUE,
+    id_sucursal INT NOT NULL,
+    id_vehiculo BIGINT NOT NULL,
+    id_suscripcion BIGINT NULL, -- NULL si es cliente sin suscripción
+    id_permiso_temporal BIGINT NULL, -- Si aplica permiso temporal
+    tipo_cliente ENUM('suscriptor', 'sin_suscripcion') NOT NULL,
+    fecha_hora_entrada TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_hora_salida TIMESTAMP NULL,
+    duracion_minutos INT NULL,
+    codigo_qr TEXT, -- QR generado
+    enlace_sms_whatsapp TEXT,
+    estado ENUM('activo', 'finalizado', 'perdido', 'incidente') DEFAULT 'activo',
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_sucursal) REFERENCES SUCURSAL(id_sucursal) ON DELETE RESTRICT,
+    FOREIGN KEY (id_vehiculo) REFERENCES VEHICULO(id_vehiculo) ON DELETE RESTRICT,
+    FOREIGN KEY (id_suscripcion) REFERENCES SUSCRIPCION(id_suscripcion) ON DELETE SET NULL,
+    FOREIGN KEY (id_permiso_temporal) REFERENCES PERMISO_TEMPORAL(id_permiso_temporal) ON DELETE SET NULL
+);
+
+-- ======================================
+-- HORAS GRATIS DE COMERCIOS
+-- ======================================
+CREATE TABLE ACREDITACION_HORAS_COMERCIO (
+    id_acreditacion BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_ticket BIGINT NOT NULL,
+    id_convenio BIGINT NOT NULL,
+    horas_otorgadas DECIMAL(5, 2) NOT NULL,
+    fecha_acreditacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    acreditado_por BIGINT, -- Usuario del comercio o sistema
+    observaciones TEXT,
+    FOREIGN KEY (id_ticket) REFERENCES TICKET(id_ticket) ON DELETE CASCADE,
+    FOREIGN KEY (id_convenio) REFERENCES CONVENIO_COMERCIO_SUCURSAL(id_convenio) ON DELETE RESTRICT,
+    FOREIGN KEY (acreditado_por) REFERENCES USUARIO(id_usuario)
+);
+
+-- ======================================
+-- INCIDENCIAS Y BITÁCORA
+-- ======================================
+CREATE TABLE INCIDENCIA_TICKET (
+    id_incidencia BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_ticket BIGINT NOT NULL,
+    tipo_incidencia ENUM('comprobante_perdido', 'fraude', 'vehiculo_no_retirado', 'otro') NOT NULL,
+    descripcion TEXT NOT NULL,
+    fecha_incidencia TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resuelto BOOLEAN DEFAULT FALSE,
+    fecha_resolucion TIMESTAMP NULL,
+    resuelto_por BIGINT,
+    observaciones_resolucion TEXT,
+    FOREIGN KEY (id_ticket) REFERENCES TICKET(id_ticket) ON DELETE CASCADE,
+    FOREIGN KEY (resuelto_por) REFERENCES USUARIO(id_usuario)
+);
+
+CREATE TABLE EVIDENCIA_INCIDENCIA (
+    id_evidencia_incidencia BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_incidencia BIGINT NOT NULL,
+    tipo_evidencia ENUM('foto_vehiculo', 'documento', 'video', 'otro') NOT NULL,
+    nombre_archivo VARCHAR(255) NOT NULL,
+    url_evidencia TEXT NOT NULL,
+    descripcion TEXT,
+    fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_incidencia) REFERENCES INCIDENCIA_TICKET(id_incidencia) ON DELETE CASCADE
+);
+
+-- ======================================
+-- TRANSACCIONES Y COBROS
+-- ======================================
+CREATE TABLE TRANSACCION_TICKET (
+    id_transaccion BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_ticket BIGINT NOT NULL,
+    tipo_cobro ENUM('tarifa_normal', 'excedente_suscripcion') NOT NULL,
+    horas_cobradas DECIMAL(8, 2) NOT NULL,
+    horas_gratis_comercio DECIMAL(8, 2) DEFAULT 0,
+    tarifa_aplicada DECIMAL(10, 2) NOT NULL, -- Tarifa por hora aplicada
+    subtotal DECIMAL(10, 2) NOT NULL,
+    descuento DECIMAL(10, 2) DEFAULT 0,
+    total DECIMAL(10, 2) NOT NULL,
+    metodo_pago VARCHAR(50),
+    numero_transaccion VARCHAR(100),
+    estado ENUM('pendiente', 'pagado', 'cancelado') DEFAULT 'pendiente',
+    fecha_transaccion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_ticket) REFERENCES TICKET(id_ticket) ON DELETE CASCADE
+);
+
+-- ======================================
+-- CORTES DE CAJA Y LIQUIDACIONES
+-- ======================================
+CREATE TABLE CORTE_CAJA (
+    id_corte_caja BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_sucursal INT NOT NULL,
+    periodo ENUM('diario', 'semanal', 'mensual', 'anual') NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    total_ingresos_tarifas DECIMAL(12, 2) DEFAULT 0,
+    total_ingresos_excedentes DECIMAL(12, 2) DEFAULT 0,
+    total_horas_comercio DECIMAL(10, 2) DEFAULT 0,
+    total_liquidacion_comercios DECIMAL(12, 2) DEFAULT 0,
+    total_neto DECIMAL(12, 2) NOT NULL,
+    generado_por BIGINT NOT NULL,
+    fecha_generacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado ENUM('preliminar', 'cerrado', 'auditado') DEFAULT 'preliminar',
+    FOREIGN KEY (id_sucursal) REFERENCES SUCURSAL(id_sucursal) ON DELETE CASCADE,
+    FOREIGN KEY (generado_por) REFERENCES USUARIO(id_usuario)
+);
+
+CREATE TABLE LIQUIDACION_COMERCIO (
+    id_liquidacion BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_corte_caja BIGINT NOT NULL,
+    id_comercio BIGINT NOT NULL,
+    id_convenio BIGINT NOT NULL,
+    total_horas_otorgadas DECIMAL(10, 2) NOT NULL,
+    tarifa_por_hora DECIMAL(10, 2) NOT NULL,
+    monto_total DECIMAL(12, 2) NOT NULL,
+    estado ENUM('pendiente', 'facturado', 'pagado') DEFAULT 'pendiente',
+    fecha_facturacion TIMESTAMP NULL,
+    fecha_pago TIMESTAMP NULL,
+    observaciones TEXT,
+    FOREIGN KEY (id_corte_caja) REFERENCES CORTE_CAJA(id_corte_caja) ON DELETE CASCADE,
+    FOREIGN KEY (id_comercio) REFERENCES COMERCIO_AFILIADO(id_comercio) ON DELETE RESTRICT,
+    FOREIGN KEY (id_convenio) REFERENCES CONVENIO_COMERCIO_SUCURSAL(id_convenio) ON DELETE RESTRICT
+);
+
+-- ======================================
+-- FLOTILLAS EMPRESARIALES (MÓDULO CORPORATIVO)
+-- ======================================
+CREATE TABLE EMPRESA_FLOTILLA (
+    id_empresa_flotilla BIGINT PRIMARY KEY AUTO_INCREMENT,
+    nombre_empresa VARCHAR(200) NOT NULL,
+    razon_social VARCHAR(200) NOT NULL,
+    nit VARCHAR(20) NOT NULL UNIQUE,
+    telefono VARCHAR(20),
+    correo_contacto VARCHAR(150),
+    direccion TEXT,
+    estado ENUM('activa', 'inactiva', 'suspendida') DEFAULT 'activa',
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE PLAN_CORPORATIVO (
+    id_plan_corporativo BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_empresa_flotilla BIGINT NOT NULL,
+    id_tipo_plan INT NOT NULL, -- Basado en plan existente
+    nombre_plan_corporativo VARCHAR(100) NOT NULL,
+    numero_placas_contratadas INT NOT NULL,
+    descuento_corporativo_adicional DECIMAL(5, 2) NOT NULL,
+    precio_plan_corporativo DECIMAL(12, 2) NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    estado ENUM('activo', 'vencido', 'cancelado') DEFAULT 'activo',
+    creado_por BIGINT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa_flotilla) REFERENCES EMPRESA_FLOTILLA(id_empresa_flotilla) ON DELETE CASCADE,
+    FOREIGN KEY (id_tipo_plan) REFERENCES TIPO_PLAN(id_tipo_plan) ON DELETE RESTRICT,
+    FOREIGN KEY (creado_por) REFERENCES USUARIO(id_usuario)
+);
+
+CREATE TABLE SUSCRIPCION_FLOTILLA (
+    id_suscripcion_flotilla BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_plan_corporativo BIGINT NOT NULL,
+    id_vehiculo BIGINT NOT NULL,
+    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado ENUM('activa', 'inactiva') DEFAULT 'activa',
+    FOREIGN KEY (id_plan_corporativo) REFERENCES PLAN_CORPORATIVO(id_plan_corporativo) ON DELETE CASCADE,
+    FOREIGN KEY (id_vehiculo) REFERENCES VEHICULO(id_vehiculo) ON DELETE RESTRICT
+);
+
+-- ======================================
+-- NOTIFICACIONES
+-- ======================================
+CREATE TABLE NOTIFICACION (
+    id_notificacion BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_usuario BIGINT NOT NULL,
+    tipo_notificacion ENUM('validacion', 'seguridad', 'confirmacion', 'alerta', 'cambio_placa', 'suscripcion', 'cobro') NOT NULL,
+    asunto VARCHAR(200) NOT NULL,
+    mensaje TEXT NOT NULL,
+    correo_enviado BOOLEAN DEFAULT FALSE,
+    fecha_envio TIMESTAMP NULL,
+    leido BOOLEAN DEFAULT FALSE,
+    fecha_lectura TIMESTAMP NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES USUARIO(id_usuario) ON DELETE CASCADE
+);
+
+-- ======================================
+-- OCUPACIÓN EN TIEMPO REAL (Histórico)
+-- ======================================
+CREATE TABLE OCUPACION_SUCURSAL (
+    id_ocupacion BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_sucursal INT NOT NULL,
+    fecha_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ocupacion_2r INT NOT NULL,
+    capacidad_2r INT NOT NULL,
+    ocupacion_4r INT NOT NULL,
+    capacidad_4r INT NOT NULL,
+    porcentaje_ocupacion_2r DECIMAL(5, 2) NOT NULL,
+    porcentaje_ocupacion_4r DECIMAL(5, 2) NOT NULL,
+    FOREIGN KEY (id_sucursal) REFERENCES SUCURSAL(id_sucursal) ON DELETE CASCADE
+);
+
+-- ======================================
+-- BITÁCORA GENERAL DEL SISTEMA
+-- ======================================
+CREATE TABLE BITACORA_SISTEMA (
+    id_bitacora BIGINT PRIMARY KEY AUTO_INCREMENT,
+    modulo VARCHAR(50) NOT NULL,
+    accion VARCHAR(100) NOT NULL,
+    tabla_afectada VARCHAR(50),
+    id_registro_afectado BIGINT,
+    id_usuario BIGINT,
+    ip_origen VARCHAR(50),
+    descripcion TEXT,
+    datos_antes JSON,
+    datos_despues JSON,
+    fecha_accion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES USUARIO(id_usuario) ON DELETE SET NULL
+);
+
+-- ======================================
+-- RELACIONES FALTANTES
+-- ======================================
+ALTER TABLE HISTORIAL_CONSUMO_SUSCRIPCION 
+    ADD FOREIGN KEY (id_ticket) REFERENCES TICKET(id_ticket) ON DELETE CASCADE;
