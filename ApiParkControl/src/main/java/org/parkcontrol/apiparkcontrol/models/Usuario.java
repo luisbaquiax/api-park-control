@@ -41,6 +41,9 @@ public class Usuario {
     @Column(name = "intentos_fallidos", nullable = false)
     private int intentosFallidos;
 
+    @Column(name = "es_primera_vez", nullable = false)
+    private boolean esPrimeraVez = true;
+
     @Column(name = "ultima_fecha_acceso")
     private LocalDateTime ultimaFechaAcceso;
 
