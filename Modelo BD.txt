@@ -39,6 +39,7 @@ CREATE TABLE USUARIO (
     debe_cambiar_contrasenia BOOLEAN DEFAULT TRUE,
     doble_factor_habilitado BOOLEAN DEFAULT FALSE,
     intentos_fallidos INT DEFAULT 0,
+	es_primera_vez BOOLEAN DEFAULT 1,
     ultima_fecha_acceso TIMESTAMP NULL,
     estado ENUM('activo', 'inactivo', 'suspendido') DEFAULT 'activo',
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -161,6 +162,7 @@ CREATE TABLE BITACORA_TARIFA_SUCURSAL (
 -- ======================================
 CREATE TABLE TIPO_PLAN (
     id_tipo_plan INT PRIMARY KEY AUTO_INCREMENT,
+	id_empresa
     nombre_plan VARCHAR(50) NOT NULL UNIQUE,
     codigo_plan VARCHAR(20) NOT NULL UNIQUE,
     descripcion TEXT,
@@ -169,7 +171,8 @@ CREATE TABLE TIPO_PLAN (
     cobertura_horaria VARCHAR(100), -- 'nocturna', 'completa', etc.
     orden_beneficio INT NOT NULL, -- 1=Full Access, 5=Nocturno
     activo BOOLEAN DEFAULT TRUE,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (id_empresa) REFERENCES EMPRESA(id_empresa)
 );
 
 CREATE TABLE CONFIGURACION_DESCUENTO_PLAN (
@@ -224,7 +227,6 @@ CREATE TABLE VEHICULO (
 -- ======================================
 CREATE TABLE SUSCRIPCION (
     id_suscripcion BIGINT PRIMARY KEY AUTO_INCREMENT,
-    id_empresa INT NOT NULL,
     id_usuario BIGINT NOT NULL,
     id_vehiculo BIGINT NOT NULL,
     id_tipo_plan INT NOT NULL,
@@ -240,7 +242,6 @@ CREATE TABLE SUSCRIPCION (
     estado ENUM('activa', 'vencida', 'cancelada', 'suspendida') DEFAULT 'activa',
     metodo_pago VARCHAR(50),
     numero_transaccion VARCHAR(100),
-    FOREIGN KEY (id_empresa) REFERENCES EMPRESA(id_empresa) ON DELETE RESTRICT,
     FOREIGN KEY (id_usuario) REFERENCES USUARIO(id_usuario) ON DELETE CASCADE,
     FOREIGN KEY (id_vehiculo) REFERENCES VEHICULO(id_vehiculo) ON DELETE RESTRICT,
     FOREIGN KEY (id_tipo_plan) REFERENCES TIPO_PLAN(id_tipo_plan) ON DELETE RESTRICT,
