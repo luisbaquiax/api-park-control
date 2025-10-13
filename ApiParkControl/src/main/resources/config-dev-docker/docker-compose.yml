@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../
+      dockerfile: ./config-dev-docker/Dockerfile
+    container_name: park_control_backend
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SERVER_PORT: ${SERVER_PORT}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      S3_BUCKET_FRONTEND: ${S3_BUCKET_FRONTEND}
+      S3_BUCKET_BACKEND: ${S3_BUCKET_BACKEND}
+      RUTA_LOCAL: ${RUTA_LOCAL}
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
