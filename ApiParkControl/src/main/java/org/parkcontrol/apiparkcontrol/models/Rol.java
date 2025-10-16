@@ -33,3 +33,12 @@ public class Rol {
     }
 
 }
+
+/*
+Ejemplo sql para insertar roles SUCURSAL, BACKOFFICE, CLIENTE, SISTEMA
+INSERT INTO rol (nombre_rol, descripcion) VALUES
+('SUCURSAL', 'Rol para usuarios que gestionan sucursales'),
+('BACKOFFICE', 'Rol para usuarios de backoffice'),
+('CLIENTE', 'Rol para usuarios clientes'),
+('SISTEMA', 'Rol para usuarios del sistema');
+ */

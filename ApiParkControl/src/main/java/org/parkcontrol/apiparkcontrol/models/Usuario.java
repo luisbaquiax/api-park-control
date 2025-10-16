@@ -49,13 +49,13 @@ public class Usuario {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private EstadoUsuario estado;
+    private EstadoUsuario estado = EstadoUsuario.ACTIVO;
 
     @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     @Column(name = "fecha_ultima_actualizacion", nullable = false)
-    private LocalDateTime fechaUltimaActualizacion;
+    private LocalDateTime fechaUltimaActualizacion = LocalDateTime.now();
 
     @PrePersist
     private void prePersist() {
