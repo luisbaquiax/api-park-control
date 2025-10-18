@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -30,10 +31,10 @@ public class TarifaBase {
     private String moneda;
 
     @Column(name = "fecha_vigencia_inicio", nullable = false)
-    private LocalDateTime fechaVigenciaInicio;
+    private LocalDate fechaVigenciaInicio;
 
     @Column(name = "fecha_vigencia_fin")
-    private LocalDateTime fechaVigenciaFin;
+    private LocalDate fechaVigenciaFin;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
@@ -44,7 +45,7 @@ public class TarifaBase {
 
     @PrePersist
     private void prePersist() {
-        this.fechaVigenciaInicio = LocalDateTime.now();
+        this.fechaVigenciaInicio = LocalDate.now();
         this.fechaCreacion = LocalDateTime.now();
         this.estado = EstadoTarifaBase.PROGRAMADO;
     }

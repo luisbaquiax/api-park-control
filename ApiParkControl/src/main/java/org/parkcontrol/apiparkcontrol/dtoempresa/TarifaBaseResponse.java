@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import org.parkcontrol.apiparkcontrol.models.TarifaBase;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -16,8 +16,7 @@ public class TarifaBaseResponse {
     private Long idEmpresa;
     private BigDecimal precioPorHora;
     private String moneda;
-    private LocalDateTime fechaVigenciaInicio;
-    private LocalDateTime fechaVigenciaFin;
+    private LocalDate fechaVigenciaInicio;
+    private LocalDate fechaVigenciaFin;
     private TarifaBase.EstadoTarifaBase estado;
-    private LocalDateTime fechaCreacion;
 }
