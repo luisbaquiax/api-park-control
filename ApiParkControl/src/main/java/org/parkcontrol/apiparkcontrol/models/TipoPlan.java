@@ -18,6 +18,10 @@ public class TipoPlan {
     @Column(name = "id_tipo_plan")
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "id_empresa", nullable = false)
+    private Empresa empresa;
+
     @Column(name = "nombre_plan", nullable = false, unique = true)
     private String nombrePlan;
 
