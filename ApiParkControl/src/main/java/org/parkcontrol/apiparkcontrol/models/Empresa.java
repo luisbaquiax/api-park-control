@@ -67,3 +67,11 @@ public class Empresa {
         INACTIVA
     }
 }
+
+
+/*Ejemplo sql para nueva empresa
+
+INSERT INTO empresa (nombre_comercial, razon_social, nit, direccion_fiscal, telefono_principal, correo_principal, estado, fecha_registro, fecha_ultima_actualizacion)
+VALUES ('Tech Solutions', 'Tech Solutions S.A.', '1234567-8', 'Avenida Siempre Viva 742, Ciudad de Guatemala', '12345678', 'techosolutions@gmail.com', 'ACTIVA', NOW(), NOW());
+
+ */

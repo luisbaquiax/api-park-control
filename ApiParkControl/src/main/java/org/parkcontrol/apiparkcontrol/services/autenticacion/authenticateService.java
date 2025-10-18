@@ -76,6 +76,7 @@ public class authenticateService {
         usuario.setEstado(Usuario.EstadoUsuario.valueOf(userDTO.getEstado()));
         usuario.setDebeCambiarContrasenia(false);
         usuario.setEsPrimeraVez(false);
+        usuario.setEstado(Usuario.EstadoUsuario.ACTIVO);
         return usuarioRepository.save(usuario);
     }
 
