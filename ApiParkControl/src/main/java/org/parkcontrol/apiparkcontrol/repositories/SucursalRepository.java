@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface SucursalRepository extends JpaRepository<Sucursal, Long> {
     List<Sucursal> findByEmpresaIdEmpresa(Long idEmpresa);
+
+    Sucursal findByUsuarioSucursal_IdUsuario(Long idUsuarioSucursal);
 }
