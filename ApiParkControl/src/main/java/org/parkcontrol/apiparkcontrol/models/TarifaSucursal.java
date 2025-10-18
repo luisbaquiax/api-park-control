@@ -18,7 +18,6 @@ public class TarifaSucursal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_tarifa_sucursal")
     private Long idTarifaSucursal;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sucursal")
     private Sucursal sucursal;
@@ -45,7 +44,6 @@ public class TarifaSucursal {
     @PrePersist
     private void prePersist() {
         this.fechaCreacion = LocalDateTime.now();
-        this.estado = EstadoTarifaSucursal.PROGRAMADO;
     }
 
     public enum EstadoTarifaSucursal {
