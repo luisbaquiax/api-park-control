@@ -59,6 +59,8 @@ public class TarifaBaseService {
         Usuario usuario = usuarioRepository.findById(idUsuarioResponsable).orElseThrow(()-> new ErrorApi(404, "Usuario no encontrado"));
         bitacoraTarifaBase.setUsuarioResponsable(usuario);
         bitacoraTarifaBase.setAccion(BitacoraTarifaBase.Accion.CREACION);
+        bitacoraTarifaBase.setPrecioAnterior(BigDecimal.ZERO);
+        bitacoraTarifaBase.setPrecioNuevo(tarifaBase.getPrecioPorHora());
         bitacoraTarifaBaseRepository.save(bitacoraTarifaBase);
 
         return tarifaBaseRepository.save(tarifaBase);
