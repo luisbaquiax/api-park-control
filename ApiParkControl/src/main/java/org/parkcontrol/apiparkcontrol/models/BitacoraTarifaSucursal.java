@@ -42,13 +42,11 @@ public class BitacoraTarifaSucursal {
     @PrePersist
     private void prePersist() {
         this.fechaCambio = LocalDateTime.now();
-        this.accion = Accion.CREACION;
     }
 
     @PreUpdate
     private void preUpdate() {
         this.fechaCambio = LocalDateTime.now();
-        this.accion = Accion.ACTUALIZACION;
     }
 
     public enum Accion {

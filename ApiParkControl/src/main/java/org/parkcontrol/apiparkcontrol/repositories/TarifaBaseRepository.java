@@ -36,4 +36,5 @@ public interface TarifaBaseRepository extends JpaRepository<TarifaBase, Long> {
 
     TarifaBase findByEstadoAndEmpresa_IdEmpresa(TarifaBase.EstadoTarifaBase estado, Long idEmpresa);
 
+    TarifaBase findByEmpresa_IdEmpresaAndEstado(Long idEmpresa, TarifaBase.EstadoTarifaBase estadoTarifaBase);
 }

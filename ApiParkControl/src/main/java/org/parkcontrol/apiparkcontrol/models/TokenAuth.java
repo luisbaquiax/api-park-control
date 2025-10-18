@@ -30,7 +30,7 @@ public class TokenAuth {
     private TipoToken tipoToken;
 
     @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     @Column(name = "fecha_expiracion", nullable = false)
     private LocalDateTime fechaExpiracion;
@@ -42,17 +42,7 @@ public class TokenAuth {
     @Column(name = "codigo_verificacion", length = 10)
     private String codigoVerificacion;
 
-    @PrePersist
-    private void prePersist() {
-        this.fechaCreacion = LocalDateTime.now();
-        this.tipoToken = TipoToken.LOGIN;
-        this.estado = EstadoToken.ACTIVO;
-    }
 
-    @PreUpdate
-    private void preUpdate() {
-        this.fechaExpiracion = LocalDateTime.now().plusHours(1);
-    }
 
     public enum TipoToken {
         VERIFICACION_EMAIL,
