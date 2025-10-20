@@ -101,7 +101,11 @@ public class GestionTarifaSucursalService {
         tarifaExistente.setPrecioPorHora(BigDecimal.valueOf(tarifaSucursal.getPrecioPorHora()));
         tarifaExistente.setMoneda(tarifaSucursal.getMoneda());
         tarifaExistente.setFechaVigenciaInicio(LocalDate.parse(tarifaSucursal.getFechaVigenciaInicio()).atStartOfDay());
-        tarifaExistente.setFechaVigenciaFin(LocalDate.parse(tarifaSucursal.getFechaVigenciaFin()).atStartOfDay());
+        if (tarifaSucursal.getFechaVigenciaFin() != null && !tarifaSucursal.getFechaVigenciaFin().isEmpty()) {
+            tarifaExistente.setFechaVigenciaFin(LocalDate.parse(tarifaSucursal.getFechaVigenciaFin()).atStartOfDay());
+        } else {
+            tarifaExistente.setFechaVigenciaFin(null); // Agregar esto para manejar el caso null
+        }
         tarifaExistente.setEstado(TarifaSucursal.EstadoTarifaSucursal.valueOf(tarifaSucursal.getEstado()));
 
         tarifaSucursalRepository.save(tarifaExistente);
