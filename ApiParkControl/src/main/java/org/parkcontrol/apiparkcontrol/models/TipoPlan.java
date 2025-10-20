@@ -22,10 +22,11 @@ public class TipoPlan {
     @JoinColumn(name = "id_empresa", nullable = false)
     private Empresa empresa;
 
-    @Column(name = "nombre_plan", nullable = false, unique = true)
-    private String nombrePlan;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "nombre_plan", nullable = false)
+    private NombrePlan nombrePlan;
 
-    @Column(name = "codigo_plan", nullable = false, unique = true)
+    @Column(name = "codigo_plan", nullable = false)
     private String codigoPlan;
 
     @Column(name = "descripcion", columnDefinition = "TEXT")
@@ -43,9 +44,24 @@ public class TipoPlan {
     @Column(name = "orden_beneficio", nullable = false)
     private Integer ordenBeneficio;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "activo", nullable = false)
-    private Boolean activo = true;
+    private EstadoConfiguracion  activo = EstadoConfiguracion.VIGENTE;
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();
+
+    public enum NombrePlan {
+        FULL_ACCESS,
+        WORKWEEK,
+        OFFICE_LIGHT,
+        DIARIO_FLEXIBLE,
+        NOCTURNO
+    }
+
+    public enum EstadoConfiguracion {
+        VIGENTE,
+        HISTORICO
+    }
+
 }
