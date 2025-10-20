@@ -199,7 +199,7 @@ public class authenticateService {
         String token = verify2FADTO.getToken();
         String codigoVerificacion = verify2FADTO.getCodigoVerificacion();
         
-        if (token == null || codigoVerificacion == null) {
+        if (token == null || token.trim().isEmpty() || codigoVerificacion == null || codigoVerificacion.trim().isEmpty()) {
             throw new Exception("Token y código de verificación son requeridos");
         }
         
@@ -299,7 +299,7 @@ public class authenticateService {
     public Map<String, Object> recoverPassword(RecoverPasswordDTO recoverPasswordDTO) throws Exception {
         String correo = recoverPasswordDTO.getCorreo();
         
-        if (correo == null || correo.isEmpty()) {
+        if (correo == null || correo.trim().isEmpty()) {
             throw new Exception("El correo es requerido");
         }
         
@@ -349,7 +349,7 @@ public class authenticateService {
         String token = verifyRecoveryDTO.getToken();
         String codigoVerificacion = verifyRecoveryDTO.getCodigoVerificacion();
         
-        if (token == null || codigoVerificacion == null) {
+        if (token == null || token.trim().isEmpty() || codigoVerificacion == null || codigoVerificacion.trim().isEmpty()) {
             throw new Exception("Token y código de verificación son requeridos");
         }
         
@@ -398,7 +398,8 @@ public class authenticateService {
         String token = resetPasswordDTO.getToken();
         String nuevaContrasenia = resetPasswordDTO.getNuevaContrasenia();
         
-        if (idUsuario == null || token == null || nuevaContrasenia == null) {
+        if (idUsuario == null || token == null || token.trim().isEmpty() || 
+            nuevaContrasenia == null || nuevaContrasenia.trim().isEmpty()) {
             throw new Exception("ID de usuario, token y nueva contraseña son requeridos");
         }
         
@@ -448,7 +449,7 @@ public class authenticateService {
         Long idUsuario = changePasswordDTO.getIdUsuario();
         String nuevaContrasenia = changePasswordDTO.getNuevaContrasenia();
 
-        if (idUsuario == null || nuevaContrasenia == null) {
+        if (idUsuario == null || nuevaContrasenia == null || nuevaContrasenia.trim().isEmpty()) {
             throw new Exception("ID de usuario y nueva contraseña son requeridos");
         }
 
