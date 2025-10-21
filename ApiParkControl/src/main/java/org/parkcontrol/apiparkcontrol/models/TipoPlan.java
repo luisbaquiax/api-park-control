@@ -32,6 +32,14 @@ public class TipoPlan {
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
+    //Precio del plan
+    @Column(name = "precio_plan")
+    private Double precioPlan;
+
+    //Horas por dia del plan
+    @Column(name = "horas_dia")
+    private Integer horasDia;
+
     @Column(name = "horas_mensuales", nullable = false)
     private Integer horasMensuales;
 

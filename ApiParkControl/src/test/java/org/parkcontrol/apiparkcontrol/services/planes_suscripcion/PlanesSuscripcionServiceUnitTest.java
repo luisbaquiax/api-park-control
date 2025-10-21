@@ -65,8 +65,10 @@ class PlanesSuscripcionServiceUnitTest {
         mockTipoPlan.setNombrePlan(TipoPlan.NombrePlan.WORKWEEK);
         mockTipoPlan.setCodigoPlan("WW-001");
         mockTipoPlan.setDescripcion("Plan Workweek");
+        mockTipoPlan.setPrecioPlan(150.00);
+        mockTipoPlan.setHorasDia(8);
         mockTipoPlan.setHorasMensuales(160);
-        mockTipoPlan.setDiasAplicables("Lunes a Viernes");
+        mockTipoPlan.setDiasAplicables("L-M-X-J-V");
         mockTipoPlan.setCoberturaHoraria("08:00 - 18:00");
         mockTipoPlan.setOrdenBeneficio(2);
         mockTipoPlan.setActivo(TipoPlan.EstadoConfiguracion.VIGENTE);
@@ -108,8 +110,10 @@ class PlanesSuscripcionServiceUnitTest {
         assertEquals("WORKWEEK", planDTO.getNombrePlan());
         assertEquals("WW-001", planDTO.getCodigoPlan());
         assertEquals("Plan Workweek", planDTO.getDescripcion());
+        assertEquals(150.00, planDTO.getPrecioPlan());
+        assertEquals(8, planDTO.getHorasDia());
         assertEquals(160, planDTO.getHorasMensuales());
-        assertEquals("Lunes a Viernes", planDTO.getDiasAplicables());
+        assertEquals("L-M-X-J-V", planDTO.getDiasAplicables());
         assertEquals("08:00 - 18:00", planDTO.getCoberturaHoraria());
         assertEquals(2, planDTO.getOrdenBeneficio());
         assertEquals("VIGENTE", planDTO.getActivo());
@@ -168,8 +172,9 @@ class PlanesSuscripcionServiceUnitTest {
         nuevoPlanDTO.setNombrePlan("WORKWEEK");
         nuevoPlanDTO.setCodigoPlan("WW-001");
         nuevoPlanDTO.setDescripcion("Plan Workweek");
+        nuevoPlanDTO.setPrecioPlan(150.00);
         nuevoPlanDTO.setHorasMensuales(160);
-        nuevoPlanDTO.setDiasAplicables("Lunes a Viernes");
+        nuevoPlanDTO.setDiasAplicables("L-M-X-J-V");
         nuevoPlanDTO.setCoberturaHoraria("08:00 - 18:00");
         nuevoPlanDTO.setDescuentoMensual(15.00);
         nuevoPlanDTO.setDescuentoAnualAdicional(5.00);
@@ -179,7 +184,7 @@ class PlanesSuscripcionServiceUnitTest {
 
         when(empresaRepository.findById(1L)).thenReturn(Optional.of(mockEmpresa));
         when(tipoPlanRepository.findByEmpresa_IdEmpresaAndActivo(1L, TipoPlan.EstadoConfiguracion.VIGENTE))
-                .thenReturn(Arrays.asList()); // Empty list for both calls
+                .thenReturn(Arrays.asList());
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(mockUsuario));
         when(tipoPlanRepository.save(any(TipoPlan.class))).thenReturn(mockTipoPlan);
         when(configuracionDescuentoPlanRepository.save(any(ConfiguracionDescuentoPlan.class))).thenReturn(mockConfigDescuento);
@@ -192,7 +197,7 @@ class PlanesSuscripcionServiceUnitTest {
         // Assert
         assertEquals("Nuevo plan de suscripción creado con éxito para la empresa con ID: 1", result);
         verify(empresaRepository).findById(1L);
-        verify(tipoPlanRepository, times(2)).findByEmpresa_IdEmpresaAndActivo(1L, TipoPlan.EstadoConfiguracion.VIGENTE); // Called twice: once for validation, once for percentage validation
+        verify(tipoPlanRepository, times(2)).findByEmpresa_IdEmpresaAndActivo(1L, TipoPlan.EstadoConfiguracion.VIGENTE);
         verify(usuarioRepository).findById(1L);
         verify(tipoPlanRepository).save(any(TipoPlan.class));
         verify(configuracionDescuentoPlanRepository).save(any(ConfiguracionDescuentoPlan.class));
@@ -246,6 +251,12 @@ class PlanesSuscripcionServiceUnitTest {
         NuevoPlanDTO nuevoPlanDTO = new NuevoPlanDTO();
         nuevoPlanDTO.setIdEmpresa(1L);
         nuevoPlanDTO.setNombrePlan("WORKWEEK");
+        nuevoPlanDTO.setCodigoPlan("WW-001");
+        nuevoPlanDTO.setDescripcion("Plan Workweek");
+        nuevoPlanDTO.setPrecioPlan(150.00);
+        nuevoPlanDTO.setHorasMensuales(160);
+        nuevoPlanDTO.setDiasAplicables("L-M-X-J-V"); // Agregar este campo requerido
+        nuevoPlanDTO.setCoberturaHoraria("08:00 - 18:00");
         nuevoPlanDTO.setDescuentoMensual(15.00);
         nuevoPlanDTO.setDescuentoAnualAdicional(5.00);
         nuevoPlanDTO.setFechaVigenciaInicio("2024-01-01");
@@ -275,8 +286,9 @@ class PlanesSuscripcionServiceUnitTest {
         editarPlanDTO.setNombrePlan("WORKWEEK");
         editarPlanDTO.setCodigoPlan("WW-002");
         editarPlanDTO.setDescripcion("Plan Workweek Actualizado");
+        editarPlanDTO.setPrecioPlan(175.00);
         editarPlanDTO.setHorasMensuales(170);
-        editarPlanDTO.setDiasAplicables("Lunes a Viernes");
+        editarPlanDTO.setDiasAplicables("L-M-X-J-V");
         editarPlanDTO.setCoberturaHoraria("08:00 - 19:00");
         editarPlanDTO.setDescuentoMensual(16.00);
         editarPlanDTO.setDescuentoAnualAdicional(6.00);
@@ -299,8 +311,8 @@ class PlanesSuscripcionServiceUnitTest {
         // Assert
         assertEquals("Plan de suscripción editado con éxito para la empresa con ID: 1", result);
         verify(tipoPlanRepository).findById(1L);
-        verify(tipoPlanRepository, times(2)).save(any(TipoPlan.class)); // One for marking historic, one for new plan
-        verify(configuracionDescuentoPlanRepository, times(2)).save(any(ConfiguracionDescuentoPlan.class)); // One for marking historic, one for new config
+        verify(tipoPlanRepository, times(2)).save(any(TipoPlan.class));
+        verify(configuracionDescuentoPlanRepository, times(2)).save(any(ConfiguracionDescuentoPlan.class));
         verify(bitacoraConfiguracionDescuentoRepository).save(any(BitacoraConfiguracionDescuento.class));
     }
 
@@ -323,7 +335,7 @@ class PlanesSuscripcionServiceUnitTest {
 
     @Test
     void testValidarPorcentajesDescuento_Success() {
-        // Arrange - Test validation logic through public method
+        // Arrange
         when(tipoPlanRepository.findByEmpresa_IdEmpresaAndActivo(1L, TipoPlan.EstadoConfiguracion.VIGENTE))
                 .thenReturn(Arrays.asList());
 
@@ -426,8 +438,9 @@ class PlanesSuscripcionServiceUnitTest {
         planDTO.setIdEmpresa(1L);
         planDTO.setCodigoPlan("TEST");
         planDTO.setDescripcion("Test");
+        planDTO.setPrecioPlan(100.00);
         planDTO.setHorasMensuales(100);
-        planDTO.setDiasAplicables("Test");
+        planDTO.setDiasAplicables("L-M-X-J-V");
         planDTO.setCoberturaHoraria("Test");
         planDTO.setDescuentoMensual(50.00);
         planDTO.setDescuentoAnualAdicional(20.00);
@@ -444,25 +457,15 @@ class PlanesSuscripcionServiceUnitTest {
         when(bitacoraConfiguracionDescuentoRepository.save(any(BitacoraConfiguracionDescuento.class)))
                 .thenReturn(new BitacoraConfiguracionDescuento());
 
-        // Test FULL_ACCESS (order 1)
-        planDTO.setNombrePlan("FULL_ACCESS");
-        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
+        // Test all plan types
+        String[] planTypes = {"FULL_ACCESS", "WORKWEEK", "OFFICE_LIGHT", "DIARIO_FLEXIBLE", "NOCTURNO"};
+        Double[] precios = {500.00, 350.00, 250.00, 150.00, 100.00};
 
-        // Test WORKWEEK (order 2)
-        planDTO.setNombrePlan("WORKWEEK");
-        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
-
-        // Test OFFICE_LIGHT (order 3)
-        planDTO.setNombrePlan("OFFICE_LIGHT");
-        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
-
-        // Test DIARIO_FLEXIBLE (order 4)
-        planDTO.setNombrePlan("DIARIO_FLEXIBLE");
-        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
-
-        // Test NOCTURNO (order 5)
-        planDTO.setNombrePlan("NOCTURNO");
-        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
+        for (int i = 0; i < planTypes.length; i++) {
+            planDTO.setNombrePlan(planTypes[i]);
+            planDTO.setPrecioPlan(precios[i]);
+            assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
+        }
     }
 
     @Test
@@ -481,7 +484,6 @@ class PlanesSuscripcionServiceUnitTest {
             planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO);
         });
 
-        // Verificar que el mensaje contiene información sobre plan inválido
         assertNotNull(exception.getMessage());
         assertTrue(exception.getMessage().contains("INVALID_PLAN") || 
                   exception.getMessage().contains("plan no válido") || 
@@ -490,15 +492,15 @@ class PlanesSuscripcionServiceUnitTest {
 
     @Test
     void testCrearNuevoPlanSuscripcion_InvalidPercentages() {
-        // Arrange - WORKWEEK (order 2) intentando tener porcentajes MAYORES que FULL_ACCESS (order 1)
-        // Esto debe fallar porque WORKWEEK tiene MENOR beneficio, debe tener MENORES porcentajes
+        // Arrange - WORKWEEK intentando tener porcentajes MAYORES que FULL_ACCESS
         NuevoPlanDTO nuevoPlanDTO = new NuevoPlanDTO();
         nuevoPlanDTO.setIdEmpresa(1L);
         nuevoPlanDTO.setNombrePlan("WORKWEEK");
         nuevoPlanDTO.setCodigoPlan("WW-001");
         nuevoPlanDTO.setDescripcion("Plan Workweek");
+        nuevoPlanDTO.setPrecioPlan(300.00);
         nuevoPlanDTO.setHorasMensuales(160);
-        nuevoPlanDTO.setDiasAplicables("Lunes a Viernes");
+        nuevoPlanDTO.setDiasAplicables("L-M-X-J-V");
         nuevoPlanDTO.setCoberturaHoraria("08:00 - 18:00");
         nuevoPlanDTO.setDescuentoMensual(30.00); // MAYOR que FULL_ACCESS (invalid)
         nuevoPlanDTO.setDescuentoAnualAdicional(12.00); // MAYOR que FULL_ACCESS (invalid)
@@ -510,11 +512,11 @@ class PlanesSuscripcionServiceUnitTest {
         TipoPlan existingPlan = new TipoPlan();
         existingPlan.setId(2L);
         existingPlan.setNombrePlan(TipoPlan.NombrePlan.FULL_ACCESS);
-        existingPlan.setOrdenBeneficio(1); // Mayor beneficio que WORKWEEK (2)
+        existingPlan.setOrdenBeneficio(1);
 
         ConfiguracionDescuentoPlan existingConfig = new ConfiguracionDescuentoPlan();
-        existingConfig.setDescuentoMensual(new BigDecimal("25.00")); // Menor que lo que intenta WORKWEEK
-        existingConfig.setDescuentoAnualAdicional(new BigDecimal("10.00")); // Menor que lo que intenta WORKWEEK
+        existingConfig.setDescuentoMensual(new BigDecimal("25.00"));
+        existingConfig.setDescuentoAnualAdicional(new BigDecimal("10.00"));
 
         when(empresaRepository.findById(1L)).thenReturn(Optional.of(mockEmpresa));
         when(tipoPlanRepository.findByEmpresa_IdEmpresaAndActivo(1L, TipoPlan.EstadoConfiguracion.VIGENTE))
@@ -529,28 +531,27 @@ class PlanesSuscripcionServiceUnitTest {
             planesSuscripcionService.crearNuevoPlanSuscripcion(nuevoPlanDTO);
         });
 
-        // Debe fallar porque WORKWEEK (orden 2, menor beneficio) intenta tener porcentajes mayores que FULL_ACCESS (orden 1, mayor beneficio)
         assertNotNull(exception.getMessage());
         assertTrue(exception.getMessage().contains("Los porcentajes de descuento no cumplen con las reglas de negocio"));
     }
 
     @Test
     void testValidarPorcentajesDescuento_MultipleConflicts() {
-        // Arrange - WORKWEEK (order 2) intentando porcentajes que no satisfacen las reglas
+        // Arrange - WORKWEEK (order 2) con múltiples planes existentes
         TipoPlan plan1 = new TipoPlan(); // FULL_ACCESS
         plan1.setId(1L);
-        plan1.setOrdenBeneficio(1); // Mayor beneficio que WORKWEEK
+        plan1.setOrdenBeneficio(1);
         
         TipoPlan plan2 = new TipoPlan(); // OFFICE_LIGHT  
         plan2.setId(3L);
-        plan2.setOrdenBeneficio(3); // Menor beneficio que WORKWEEK
+        plan2.setOrdenBeneficio(3);
 
-        ConfiguracionDescuentoPlan config1 = new ConfiguracionDescuentoPlan(); // Para FULL_ACCESS
-        config1.setDescuentoMensual(new BigDecimal("25.00")); // WORKWEEK debe tener MENOS que esto
+        ConfiguracionDescuentoPlan config1 = new ConfiguracionDescuentoPlan();
+        config1.setDescuentoMensual(new BigDecimal("25.00"));
         config1.setDescuentoAnualAdicional(new BigDecimal("10.00"));
 
-        ConfiguracionDescuentoPlan config2 = new ConfiguracionDescuentoPlan(); // Para OFFICE_LIGHT
-        config2.setDescuentoMensual(new BigDecimal("10.00")); // WORKWEEK debe tener MAS que esto
+        ConfiguracionDescuentoPlan config2 = new ConfiguracionDescuentoPlan();
+        config2.setDescuentoMensual(new BigDecimal("10.00"));
         config2.setDescuentoAnualAdicional(new BigDecimal("3.00"));
 
         when(tipoPlanRepository.findByEmpresa_IdEmpresaAndActivo(1L, TipoPlan.EstadoConfiguracion.VIGENTE))
@@ -561,11 +562,92 @@ class PlanesSuscripcionServiceUnitTest {
                 .thenReturn(config2);
 
         // Act - WORKWEEK con 15% mensual: MENOS que FULL_ACCESS (25%) ✓ pero MAS que OFFICE_LIGHT (10%) ✓
-        // Esto debería SER VÁLIDO según la lógica: FULL_ACCESS(25%) > WORKWEEK(15%) > OFFICE_LIGHT(10%)
         boolean result = planesSuscripcionService.validarPorcentajesDescuento(15.00, "WORKWEEK", 5.00, 1L);
 
         // Assert - Debe ser TRUE porque cumple las reglas: menor que superior, mayor que inferior
         assertTrue(result);
+    }
+
+    @Test
+    void testCalcularHorasDias_DifferentDayFormats() {
+        // Test con diferentes formatos de días para verificar el cálculo
+        NuevoPlanDTO planDTO = new NuevoPlanDTO();
+        planDTO.setIdEmpresa(1L);
+        planDTO.setNombrePlan("WORKWEEK");
+        planDTO.setCodigoPlan("WW-TEST");
+        planDTO.setDescripcion("Test");
+        planDTO.setPrecioPlan(200.00);
+        planDTO.setHorasMensuales(173);
+        planDTO.setCoberturaHoraria("08:00 - 17:00");
+        planDTO.setDescuentoMensual(15.00);
+        planDTO.setDescuentoAnualAdicional(5.00);
+        planDTO.setFechaVigenciaInicio("2024-01-01");
+        planDTO.setFechaVigenciaFin("2024-12-31");
+        planDTO.setIdUsuarioCreacion(1L);
+
+        when(empresaRepository.findById(1L)).thenReturn(Optional.of(mockEmpresa));
+        when(tipoPlanRepository.findByEmpresa_IdEmpresaAndActivo(1L, TipoPlan.EstadoConfiguracion.VIGENTE))
+                .thenReturn(Arrays.asList());
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(mockUsuario));
+        when(tipoPlanRepository.save(any(TipoPlan.class))).thenReturn(mockTipoPlan);
+        when(configuracionDescuentoPlanRepository.save(any(ConfiguracionDescuentoPlan.class))).thenReturn(mockConfigDescuento);
+        when(bitacoraConfiguracionDescuentoRepository.save(any(BitacoraConfiguracionDescuento.class)))
+                .thenReturn(new BitacoraConfiguracionDescuento());
+
+        // Test con 5 días (L-M-X-J-V)
+        planDTO.setDiasAplicables("L-M-X-J-V");
+        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
+
+        // Test con 7 días (L-M-X-J-V-S-D)
+        planDTO.setCodigoPlan("WW-TEST2");
+        planDTO.setDiasAplicables("L-M-X-J-V-S-D");
+        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
+
+        // Test con 1 día (L)
+        planDTO.setCodigoPlan("WW-TEST3");
+        planDTO.setDiasAplicables("L");
+        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
+    }
+
+    @Test
+    void testCrearNuevoPlanSuscripcion_WithDifferentPriceRanges() {
+        // Test para verificar que el servicio maneja diferentes rangos de precios
+        NuevoPlanDTO planDTO = new NuevoPlanDTO();
+        planDTO.setIdEmpresa(1L);
+        planDTO.setNombrePlan("FULL_ACCESS");
+        planDTO.setCodigoPlan("FA-001");
+        planDTO.setDescripcion("Plan Full Access");
+        planDTO.setHorasMensuales(300);
+        planDTO.setDiasAplicables("L-M-X-J-V-S-D");
+        planDTO.setCoberturaHoraria("00:00 - 23:59");
+        planDTO.setDescuentoMensual(25.00);
+        planDTO.setDescuentoAnualAdicional(10.00);
+        planDTO.setFechaVigenciaInicio("2024-01-01");
+        planDTO.setFechaVigenciaFin("2024-12-31");
+        planDTO.setIdUsuarioCreacion(1L);
+
+        when(empresaRepository.findById(1L)).thenReturn(Optional.of(mockEmpresa));
+        when(tipoPlanRepository.findByEmpresa_IdEmpresaAndActivo(1L, TipoPlan.EstadoConfiguracion.VIGENTE))
+                .thenReturn(Arrays.asList());
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(mockUsuario));
+        when(tipoPlanRepository.save(any(TipoPlan.class))).thenReturn(mockTipoPlan);
+        when(configuracionDescuentoPlanRepository.save(any(ConfiguracionDescuentoPlan.class))).thenReturn(mockConfigDescuento);
+        when(bitacoraConfiguracionDescuentoRepository.save(any(BitacoraConfiguracionDescuento.class)))
+                .thenReturn(new BitacoraConfiguracionDescuento());
+
+        // Test con precio alto
+        planDTO.setPrecioPlan(1000.00);
+        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
+
+        // Test con precio bajo
+        planDTO.setCodigoPlan("FA-002");
+        planDTO.setPrecioPlan(50.00);
+        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
+
+        // Test con precio cero
+        planDTO.setCodigoPlan("FA-003");
+        planDTO.setPrecioPlan(0.00);
+        assertDoesNotThrow(() -> planesSuscripcionService.crearNuevoPlanSuscripcion(planDTO));
     }
 
     @Test
@@ -596,7 +678,6 @@ class PlanesSuscripcionServiceUnitTest {
             planesSuscripcionService.obtenerPlanesSuscripcionPorEmpresa(1L);
         });
 
-        // The service will fail when trying to convert null to string
         assertNotNull(exception);
     }
 }
