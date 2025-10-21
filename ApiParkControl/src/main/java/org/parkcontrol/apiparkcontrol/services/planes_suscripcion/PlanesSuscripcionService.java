@@ -42,6 +42,8 @@ public class PlanesSuscripcionService {
                     tipoPlan.getNombrePlan().toString(),
                     tipoPlan.getCodigoPlan(),
                     tipoPlan.getDescripcion(),
+                    tipoPlan.getPrecioPlan(),
+                    tipoPlan.getHorasDia(),
                     tipoPlan.getHorasMensuales(),
                     tipoPlan.getDiasAplicables(),
                     tipoPlan.getCoberturaHoraria(),
@@ -87,6 +89,8 @@ public class PlanesSuscripcionService {
         nuevoTipoPlan.setNombrePlan(TipoPlan.NombrePlan.valueOf(nuevoTipoPlanDTO.getNombrePlan()));
         nuevoTipoPlan.setCodigoPlan(nuevoTipoPlanDTO.getCodigoPlan());
         nuevoTipoPlan.setDescripcion(nuevoTipoPlanDTO.getDescripcion());
+        nuevoTipoPlan.setPrecioPlan(nuevoTipoPlanDTO.getPrecioPlan());
+        nuevoTipoPlan.setHorasDia(calcularHorasDias(nuevoTipoPlanDTO.getHorasMensuales(), nuevoTipoPlanDTO.getDiasAplicables()));
         nuevoTipoPlan.setHorasMensuales(nuevoTipoPlanDTO.getHorasMensuales());
         nuevoTipoPlan.setDiasAplicables(nuevoTipoPlanDTO.getDiasAplicables());
         nuevoTipoPlan.setCoberturaHoraria(nuevoTipoPlanDTO.getCoberturaHoraria());
@@ -165,6 +169,8 @@ public class PlanesSuscripcionService {
         nuevoTipoPlan.setNombrePlan(TipoPlan.NombrePlan.valueOf(editarPlan.getNombrePlan()));
         nuevoTipoPlan.setCodigoPlan(editarPlan.getCodigoPlan());
         nuevoTipoPlan.setDescripcion(editarPlan.getDescripcion());
+        nuevoTipoPlan.setPrecioPlan(editarPlan.getPrecioPlan());
+        nuevoTipoPlan.setHorasDia(calcularHorasDias(editarPlan.getHorasMensuales(), editarPlan.getDiasAplicables()));
         nuevoTipoPlan.setHorasMensuales(editarPlan.getHorasMensuales());
         nuevoTipoPlan.setDiasAplicables(editarPlan.getDiasAplicables());
         nuevoTipoPlan.setCoberturaHoraria(editarPlan.getCoberturaHoraria());
@@ -287,7 +293,16 @@ Access > Workweek > Office Light > Diario Flexible > Nocturno.*/
         return true;
     }
 
-
-
-
+    //Calcular las horas por dia según las horas mensuales y los dias aplicables
+    private Integer calcularHorasDias(Integer horasMensuales, String diasAplicables) {
+        int diasSemana;
+        //Los dias de la semana vendran en formato L-M-X-J-V-S-D solo letras separadas por guiones
+        String[] dias = diasAplicables.split("-");
+        diasSemana = dias.length;
+        //Calcular las semanas en un mes (aproximadamente 4.33 semanas por mes)
+        double semanasPorMes = 4.33;
+        //Calcular las horas por dia
+        double horasPorDia = horasMensuales / (semanasPorMes * diasSemana);
+        return (int) Math.round(horasPorDia);
+    }
 }

@@ -14,6 +14,8 @@ public class NuevoPlanDTO {
     private String nombrePlan;
     private String codigoPlan;
     private String descripcion;
+    private Double precioPlan;
+    private Integer horasDia;
     private Integer horasMensuales;
     private String diasAplicables;
     private String coberturaHoraria;
