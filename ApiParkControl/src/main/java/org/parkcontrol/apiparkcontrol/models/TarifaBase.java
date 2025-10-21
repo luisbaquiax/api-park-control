@@ -47,7 +47,6 @@ public class TarifaBase {
     private void prePersist() {
         this.fechaVigenciaInicio = LocalDate.now();
         this.fechaCreacion = LocalDateTime.now();
-        this.estado = EstadoTarifaBase.PROGRAMADO;
     }
 
     public enum EstadoTarifaBase {

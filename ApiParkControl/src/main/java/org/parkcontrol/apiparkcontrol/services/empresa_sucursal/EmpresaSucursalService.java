@@ -56,7 +56,7 @@ public class EmpresaSucursalService {
         usuario.setRol(rol);
         usuario.setNombreUsuario(userDTO.getNombreUsuario());
         usuario.setContraseniaHash(passwordEncoder.encrypt(userDTO.getContraseniaHash()));
-        usuario.setDobleFactorHabilitado(false);
+        usuario.setDobleFactorHabilitado(userDTO.isDobleFactorHabilitado()); // Usar el valor del DTO
         usuario.setEstado(Usuario.EstadoUsuario.valueOf(userDTO.getEstado()));
         usuario.setDebeCambiarContrasenia(true);
         usuario.setEsPrimeraVez(true);
