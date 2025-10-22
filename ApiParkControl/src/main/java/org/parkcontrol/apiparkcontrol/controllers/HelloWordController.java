@@ -1,5 +1,6 @@
 package org.parkcontrol.apiparkcontrol.controllers;
 
+import org.parkcontrol.apiparkcontrol.utils.Encriptation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;

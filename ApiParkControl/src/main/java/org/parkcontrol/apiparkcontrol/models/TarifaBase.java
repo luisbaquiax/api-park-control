@@ -40,8 +40,8 @@ public class TarifaBase {
     @Column(name = "estado", nullable = false)
     private EstadoTarifaBase estado;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
+    @Column(name = "fecha_creacion", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     @PrePersist
     private void prePersist() {

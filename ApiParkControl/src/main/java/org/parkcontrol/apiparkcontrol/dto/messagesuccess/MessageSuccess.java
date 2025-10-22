@@ -1,4 +1,4 @@
-package org.parkcontrol.apiparkcontrol.dtoresponse;
+package org.parkcontrol.apiparkcontrol.dto.messagesuccess;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
