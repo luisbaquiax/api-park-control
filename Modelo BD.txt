@@ -266,6 +266,20 @@ CREATE TABLE HISTORIAL_CONSUMO_SUSCRIPCION (
 );
 
 -- ======================================
+-- HISTORIAL DE PAGOS DE SUSCRIPCIÓN
+-- ======================================
+CREATE TABLE HISTORIAL_PAGO_SUSCRIPCION (
+    id_historial_pago BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id_suscripcion BIGINT NOT NULL,
+    fecha_pago TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    monto_pagado DECIMAL(10, 2) NOT NULL,
+    metodo_pago VARCHAR(50),
+    numero_transaccion VARCHAR(100),
+    estado_pago ENUM('completado', 'fallido', 'pendiente') DEFAULT 'completado'
+    FOREIGN KEY (id_suscripcion) REFERENCES SUSCRIPCION(id_suscripcion) ON DELETE CASCADE
+);
+
+-- ======================================
 -- CAMBIOS DE PLACA Y PERMISOS ESPECIALES
 -- ======================================
 CREATE TABLE SOLICITUD_CAMBIO_PLACA (
