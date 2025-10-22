@@ -148,7 +148,7 @@ public class SuscripcionClienteService {
                     suscripcion.getHorasConsumidas().doubleValue(),
                     suscripcion.getFechaInicio().toLocalDate().toString(),
                     suscripcion.getFechaFin().toLocalDate().toString(),
-                    suscripcion.getFechaCompra().toLocalDate().toString(), // Suponiendo que la fecha de compra es la fecha de inicio
+                    suscripcion.getFechaCompra().toLocalDate().toString(),
                     suscripcion.getEstado().toString(),
                     suscripcion.getTarifaBaseReferencia().getPrecioPorHora().doubleValue(),
                     new VehiculoClienteDTO(

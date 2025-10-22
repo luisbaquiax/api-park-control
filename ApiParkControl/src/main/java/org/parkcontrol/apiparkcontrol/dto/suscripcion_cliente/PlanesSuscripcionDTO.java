@@ -1,6 +1,7 @@
 package org.parkcontrol.apiparkcontrol.dto.suscripcion_cliente;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.parkcontrol.apiparkcontrol.dto.empresa_sucursal.ObtenerSucursalesEmpresaDTO;
@@ -11,12 +12,14 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class PlanesSuscripcionDTO {
     List<EmpresaSuscripcionesDTO> empresasSuscripciones;
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
+    @Builder
     public static class EmpresaSuscripcionesDTO {
         private Long idEmpresa;
         private String nombreComercial;
