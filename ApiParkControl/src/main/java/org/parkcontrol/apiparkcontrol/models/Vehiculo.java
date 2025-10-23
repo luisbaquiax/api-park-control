@@ -46,10 +46,10 @@ public class Vehiculo {
     private EstadoVehiculo estado;
 
     @Column(name = "fecha_registro", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fechaRegistro;
+    private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     @Column(name = "fecha_ultima_actualizacion", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
-    private LocalDateTime fechaUltimaActualizacion;
+    private LocalDateTime fechaUltimaActualizacion = LocalDateTime.now();
 
     public enum TipoVehiculo {
         DOS_RUEDAS,

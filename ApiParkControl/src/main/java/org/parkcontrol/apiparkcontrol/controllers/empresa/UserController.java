@@ -1,6 +1,6 @@
 package org.parkcontrol.apiparkcontrol.controllers.empresa;
 
-import org.parkcontrol.apiparkcontrol.dtoempresa.UsuarioPersonaRolResponse;
+import org.parkcontrol.apiparkcontrol.dto.empresa.UsuarioPersonaRolResponse;
 import org.parkcontrol.apiparkcontrol.mapper.UsuarioPersonaRolMap;
 import org.parkcontrol.apiparkcontrol.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
