@@ -1,7 +1,7 @@
 package org.parkcontrol.apiparkcontrol.controllers.empresa;
 
-import org.parkcontrol.apiparkcontrol.dtoempresa.TarifaBaseResponse;
-import org.parkcontrol.apiparkcontrol.dtoresponse.MessageSuccess;
+import org.parkcontrol.apiparkcontrol.dto.empresa.TarifaBaseResponse;
+import org.parkcontrol.apiparkcontrol.dto.messagesuccess.MessageSuccess;
 import org.parkcontrol.apiparkcontrol.mapper.TarifaBaseMap;
 import org.parkcontrol.apiparkcontrol.models.TarifaBase;
 import org.parkcontrol.apiparkcontrol.services.TarifaBaseService;

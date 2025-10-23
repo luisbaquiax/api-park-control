@@ -1,4 +1,4 @@
-package org.parkcontrol.apiparkcontrol.dtoempresa;
+package org.parkcontrol.apiparkcontrol.dto.empresa;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

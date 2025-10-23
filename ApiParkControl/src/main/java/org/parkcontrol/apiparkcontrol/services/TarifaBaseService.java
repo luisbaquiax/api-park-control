@@ -1,7 +1,7 @@
 package org.parkcontrol.apiparkcontrol.services;
 
 import jakarta.transaction.Transactional;
-import org.parkcontrol.apiparkcontrol.dtoempresa.TarifaBaseResponse;
+import org.parkcontrol.apiparkcontrol.dto.empresa.TarifaBaseResponse;
 import org.parkcontrol.apiparkcontrol.models.BitacoraTarifaBase;
 import org.parkcontrol.apiparkcontrol.models.Empresa;
 import org.parkcontrol.apiparkcontrol.models.TarifaBase;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Service
 public class TarifaBaseService {
@@ -97,7 +96,8 @@ public class TarifaBaseService {
         tarifaBase.setFechaVigenciaInicio(tarifaBaseResponse.getFechaVigenciaInicio());
         tarifaBase.setFechaVigenciaFin(tarifaBaseResponse.getFechaVigenciaFin());
         //activar tarifa programado
-        if(tarifaBaseResponse.getFechaVigenciaInicio().isAfter(LocalDate.now())){
+        if(tarifaBaseResponse.getFechaVigenciaInicio().isAfter(LocalDate.now()) ||
+        tarifaBaseResponse.getFechaVigenciaFin().isEqual(LocalDate.now())){
             tarifaBase.setEstado(TarifaBase.EstadoTarifaBase.PROGRAMADO);
             bitacora.setAccion(BitacoraTarifaBase.Accion.ACTUALIZACION);
         }else{

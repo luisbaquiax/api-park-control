@@ -1,6 +1,6 @@
 package org.parkcontrol.apiparkcontrol.controllers.empresa;
 
-import org.parkcontrol.apiparkcontrol.dtoempresa.BitacoraTarifaBaseResponse;
+import org.parkcontrol.apiparkcontrol.dto.empresa.BitacoraTarifaBaseResponse;
 import org.parkcontrol.apiparkcontrol.mapper.BitacoraTarifaBaseMapper;
 import org.parkcontrol.apiparkcontrol.services.BitacoraTarifaBaseService;
 import org.springframework.beans.factory.annotation.Autowired;

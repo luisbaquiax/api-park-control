@@ -1,4 +1,4 @@
-package org.parkcontrol.apiparkcontrol.dtobitacoraSistema;
+package org.parkcontrol.apiparkcontrol.dto.bitacoraSistema;
 
 import java.time.LocalDateTime;
 

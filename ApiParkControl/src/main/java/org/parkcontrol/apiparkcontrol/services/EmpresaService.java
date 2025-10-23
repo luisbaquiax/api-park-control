@@ -1,7 +1,7 @@
 package org.parkcontrol.apiparkcontrol.services;
 
 import jakarta.transaction.Transactional;
-import org.parkcontrol.apiparkcontrol.dtoempresa.RegisterEmpresa;
+import org.parkcontrol.apiparkcontrol.dto.empresa.RegisterEmpresa;
 import org.parkcontrol.apiparkcontrol.models.Empresa;
 import org.parkcontrol.apiparkcontrol.models.Usuario;
 import org.parkcontrol.apiparkcontrol.repositories.EmpresaRepository;
@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class EmpresaService {

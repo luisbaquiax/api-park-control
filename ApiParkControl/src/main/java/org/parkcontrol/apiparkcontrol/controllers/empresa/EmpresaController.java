@@ -1,7 +1,7 @@
 package org.parkcontrol.apiparkcontrol.controllers.empresa;
 
-import org.parkcontrol.apiparkcontrol.dtoempresa.EmpresaResponse;
-import org.parkcontrol.apiparkcontrol.dtoempresa.RegisterEmpresa;
+import org.parkcontrol.apiparkcontrol.dto.empresa.EmpresaResponse;
+import org.parkcontrol.apiparkcontrol.dto.empresa.RegisterEmpresa;
 import org.parkcontrol.apiparkcontrol.mapper.EmpresaMap;
 import org.parkcontrol.apiparkcontrol.services.EmpresaService;
 import org.springframework.beans.factory.annotation.Autowired;
