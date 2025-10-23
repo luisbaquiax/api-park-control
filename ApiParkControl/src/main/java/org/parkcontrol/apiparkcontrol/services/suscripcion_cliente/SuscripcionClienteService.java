@@ -139,6 +139,8 @@ public class SuscripcionClienteService {
         List<ClientePlanesSuscripcionDTO.SuscripcionClienteDTO> suscripcionClienteDTOS = new ArrayList<>();
         List<Suscripcion>  suscripciones = suscripcionRepository.findByUsuario_IdUsuario(idCliente);
         for (Suscripcion suscripcion : suscripciones) {
+
+            PlanesSuscripcionDTO.EmpresaSuscripcionesDTO empresaSuscripcionesDTO = obtenerEmpresaSuscripciones(suscripcion.getEmpresa());
             ClientePlanesSuscripcionDTO.SuscripcionClienteDTO suscripcionClienteDTO = new ClientePlanesSuscripcionDTO.SuscripcionClienteDTO(
                     suscripcion.getId(),
                     suscripcion.getPeriodoContratado().toString(),
@@ -159,7 +161,11 @@ public class SuscripcionClienteService {
                             suscripcion.getVehiculo().getColor(),
                             suscripcion.getVehiculo().getTipoVehiculo().toString()
                     ),
-                    obtenerEmpresaSuscripciones(suscripcion.getEmpresa())
+                    empresaSuscripcionesDTO.getSuscripciones().stream()
+                            .filter(plan -> plan.getId().equals(suscripcion.getTipoPlan().getId()))
+                            .findFirst()
+                            .orElse(null),
+                    empresaSuscripcionesDTO.getSucursales()
             );
             suscripcionClienteDTOS.add(suscripcionClienteDTO);
         }
@@ -178,7 +184,7 @@ public class SuscripcionClienteService {
             throw new IllegalArgumentException("Cliente no encontrado o inactivo");
         }
 
-        List<Vehiculo> vehiculos = vehiculoRepository.findByPropietario_IdPersona(cliente.getPersona().getIdPersona());
+        List<Vehiculo> vehiculos = vehiculoRepository.findByPropietario_IdPersonaAndEstado(cliente.getPersona().getIdPersona(), Vehiculo.EstadoVehiculo.ACTIVO);
         List<VehiculoClienteDTO> vehiculoClienteDTOS = new ArrayList<>();
 
         for (Vehiculo vehiculo : vehiculos) {
@@ -272,6 +278,8 @@ public class SuscripcionClienteService {
         }
         nuevaSuscripcion.setFechaCompra(LocalDateTime.now());
         nuevaSuscripcion.setEstado(Suscripcion.EstadoSuscripcion.ACTIVA);
+        nuevaSuscripcion.setMetodoPago(nuevaSuscripcionDTO.getMetodoPago());
+        nuevaSuscripcion.setNumeroTransaccion(nuevaSuscripcionDTO.getNumeroTransaccion());
 
         Suscripcion suscripcionG= suscripcionRepository.save(nuevaSuscripcion);
         //Crear el historial de pago para la nueva suscripción

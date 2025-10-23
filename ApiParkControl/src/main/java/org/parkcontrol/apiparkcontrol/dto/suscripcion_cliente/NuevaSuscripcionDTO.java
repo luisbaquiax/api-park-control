@@ -18,3 +18,15 @@ public class NuevaSuscripcionDTO {
     private String metodoPago;
     private String numeroTransaccion;
 }
+/*
+Ejemplo json Nueva Suscriocion
+{
+    idCliente: 1,
+    idVehiculo: 17,
+    idEmpresa: 1,
+    idTipoPlanSuscripcion: 5,
+    periodoContratado: 'ANUAL',
+    metodoPago: 'TARJETA_CREDITO',
+    numeroTransaccion: 'TR-5124'
+}
+ */

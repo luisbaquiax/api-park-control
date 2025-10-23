@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface VehiculoRepository extends JpaRepository<Vehiculo, Long> {
     List<Vehiculo> findByPropietario_IdPersona(Long idPersona);
+
+    List<Vehiculo> findByPropietario_IdPersonaAndEstado(Long idPersona, Vehiculo.EstadoVehiculo estado);
 }

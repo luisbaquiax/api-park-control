@@ -15,3 +15,11 @@ public class RenovacionSuscripcionDTO {
     private String metodoPago;
     private String numeroTransaccion;
 }
+/*Ejemplo json Renovacion Suscriocion
+{
+    "idSuscripcion": 10,
+    "nuevoPeriodoContratado": "MENSUAL",
+    "metodoPago": "TARJETA_DEBITO",
+    "numeroTransaccion": "TR-7890"
+}
+*/

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.parkcontrol.apiparkcontrol.dto.empresa_sucursal.ObtenerSucursalesEmpresaDTO;
+import org.parkcontrol.apiparkcontrol.dto.planes_suscripcion.DetalleTipoPlanDTO;
 
 import java.util.List;
 
@@ -34,7 +36,8 @@ public class ClientePlanesSuscripcionDTO {
         private String estadoSuscripcion;
         private Double tarifaBaseReferencia;
         private VehiculoClienteDTO vehiculoClienteDTO;
-        private PlanesSuscripcionDTO.EmpresaSuscripcionesDTO empresaSuscripcionDTO;
+        private DetalleTipoPlanDTO tipoPlanSuscripcionDTO;
+        private List<ObtenerSucursalesEmpresaDTO.SucursalDTO> sucursalesDisponibles;
 
     }
 
