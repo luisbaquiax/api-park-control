@@ -8,12 +8,14 @@ import org.parkcontrol.apiparkcontrol.models.Vehiculo;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VehiculoRequest {
+public class VehicleResponsDTO {
+    private Long id;
+    private Long idPersona;
     private String placa;
     private Vehiculo.TipoVehiculo tipoVehiculo;
     private String marca;
     private String modelo;
     private Integer anio;
     private String color;
-    private Vehiculo.EstadoVehiculo estadoVehiculo;
+    private Vehiculo.EstadoVehiculo estado;
 }

@@ -6,7 +6,7 @@ import org.parkcontrol.apiparkcontrol.dto.PersonaRequest;
 
 @Data
 @NoArgsConstructor
-public class RegisterVehicle {
-    private VehiculoRequest vehiculo;
+public class RegisterVehicleDTO {
+    private VehiculoRequestDTO vehiculo;
     private PersonaRequest persona;
 }
