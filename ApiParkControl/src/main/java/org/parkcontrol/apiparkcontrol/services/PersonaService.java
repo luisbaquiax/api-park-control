@@ -18,6 +18,9 @@ public class PersonaService {
         if(aux!=null){
             throw new ErrorApi(401, String.format("El dpi %s ya se encuentra en uso.", persona.getDpi()));
         }
+        if(personaRepository.findByCorreo(persona.getCorreo()) != null){
+            throw new ErrorApi(401, String.format("El correo %s ya se encuentra en uso.", persona.getCorreo()));
+        }
         Persona personaGuardar = new Persona();
         personaGuardar.setIdPersona(null);
         personaGuardar.setApellido(persona.getApellido());
