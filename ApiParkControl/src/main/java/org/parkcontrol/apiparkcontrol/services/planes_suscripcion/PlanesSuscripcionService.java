@@ -26,7 +26,7 @@ public class PlanesSuscripcionService {
     @Autowired
     private SucursalRepository sucursalRepository;
     @Autowired
-    private BitacoraConfiguracionDescuentoRepository bitacoraConfiguracionDescuentoRepository;;
+    private BitacoraConfiguracionDescuentoRepository bitacoraConfiguracionDescuentoRepository;
 
     //Obtenemos todos los planes de suscripcion vigentes de una empresa
     public List<DetalleTipoPlanDTO> obtenerPlanesSuscripcionPorEmpresa(Long idUsuario) {
