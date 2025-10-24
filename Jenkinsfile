@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SPRING_DATASOURCE_URL      = "jdbc:mysql://database-park-control.c2pkw8qy64pz.us-east-1.rds.amazonaws.com:3306/park_control_db"
+        SPRING_DATASOURCE_URL      = "jdbc:database-park-control.c2pkw8qy64pz.us-east-1.rds.amazonaws.com:3306/park_control_db"
         SPRING_DATASOURCE_USERNAME = credentials('db-user')
         SPRING_DATASOURCE_PASSWORD = credentials('db-password')
         SERVER_PORT                = "8081"
