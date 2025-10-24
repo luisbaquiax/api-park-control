@@ -38,9 +38,14 @@ pipeline {
 
         stage('Deploy') {
              steps {
-                sh 'cd ApiParkControl && mvn package -DskipTests'
-                sh 'cd ApiParkControl/target/config-dev-docker && sudo -E docker-compose down'
-                sh 'cd ApiParkControl/target/config-dev-docker && sudo -E docker-compose up --build -d'
+                sh '''
+                    cd ApiParkControl
+                    mvn package -DskipTests
+                    cp target/ApiParkControl-0.0.1-SNAPSHOT.jar target/config-dev-docker/ApiParkControl.jar
+                    cd target/config-dev-docker
+                    sudo -E docker-compose down
+                    sudo -E docker-compose up --build -d
+                '''
                 echo "Despliegue a DEV exitoso"
             }
         }
