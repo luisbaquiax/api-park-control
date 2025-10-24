@@ -50,17 +50,11 @@ public class Persona {
     private String codigoPostal;
 
     @Column(name = "fecha_registro", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fechaRegistro;
+    private LocalDateTime fechaRegistro = LocalDateTime.now();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private Estado estado;
-
-    @PrePersist
-    private void prePersist() {
-        this.fechaRegistro = LocalDateTime.now();
-        this.estado = Estado.ACTIVO;
-    }
+    private Estado estado = Estado.ACTIVO;
 
     public enum Estado {
         ACTIVO,

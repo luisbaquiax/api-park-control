@@ -78,7 +78,6 @@ public class Sucursal {
     private void prePersist() {
         this.fechaCreacion = LocalDateTime.now();
         this.fechaUltimaActualizacion = LocalDateTime.now();
-        this.estado = EstadoSucursal.ACTIVA;
     }
 
     @PreUpdate
