@@ -16,7 +16,7 @@ pipeline {
         // ------------------------
         // Backend y Frontend
         // ------------------------
-        CORS_ALLOWED_ORIGINS  = "http://delivery-system-frontend.s3-website.us-east-2.amazonaws.com"
+        CORS_ALLOWED_ORIGINS  = "http://localhost:4200"
 
         STORAGE_TYPE               = "s3"
         RUTA_LOCAL                 = "/tmp/uploads/"
