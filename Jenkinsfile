@@ -16,7 +16,7 @@ pipeline {
         // ------------------------
         // Backend y Frontend
         // ------------------------
-        CORS_ALLOWED_ORIGINS  = "http://localhost:4200"
+        CORS_ALLOWED_ORIGINS  = "http://localhost:4200,https://app-park-control.vercel.app"
 
         STORAGE_TYPE               = "s3"
         RUTA_LOCAL                 = "/tmp/uploads/"
