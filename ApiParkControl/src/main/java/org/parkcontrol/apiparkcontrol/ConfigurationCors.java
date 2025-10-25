@@ -13,11 +13,12 @@ public class ConfigurationCors {
     private String allowedOrigins;
     @Bean
     public WebMvcConfigurer corsConfigurer() {
+        String[] origins = allowedOrigins.split(",");
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(allowedOrigins)
+                        .allowedOrigins(origins)
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
             }
