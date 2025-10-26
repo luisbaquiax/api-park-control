@@ -2,6 +2,7 @@ package org.parkcontrol.apiparkcontrol.services.comercio_afliado;
 
 import jakarta.transaction.Transactional;
 import org.parkcontrol.apiparkcontrol.dto.comercio_afiliado.*;
+import org.parkcontrol.apiparkcontrol.dto.empresa_sucursal.UsuarioSucursalDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.parkcontrol.apiparkcontrol.models.*;
@@ -29,7 +30,11 @@ public class GestionComercioAfiliadoService {
 
     @Autowired
     UsuarioRepository usuarioRepository;
-    //Obtemos todas las empresas
+
+    @Autowired
+    EmpresaRepository empresaRepository;
+
+    //Obtemos todas los comercios afiliados activos
 
     public List<ComercioAfiliadoDTO> getComercioAfiliado() {
         List<ComercioAfiliado> comercios = comercioAfiliadoRepository.findComercioAfiliadoByEstado(ComercioAfiliado.Estado.ACTIVO);
@@ -53,8 +58,93 @@ public class GestionComercioAfiliadoService {
 
     }
 
+    //Obtenemos el detalle de todos los convenios de todas las sucursales
+    public List<DetalleSucursalesConvenioDTO> getDetallesSucursalesConvenio(Long idUsuarioEmpresa){
+        //Obtenemos el idEmpresa a partir del idUsuarioEmpresa
+        Usuario usuarioEmpresa = usuarioRepository.findById(idUsuarioEmpresa)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + idUsuarioEmpresa));
+        Empresa empresa = empresaRepository.findByUsuarioEmpresa_IdUsuario(usuarioEmpresa.getIdUsuario()).getFirst();
+        if(empresa == null){
+            throw new RuntimeException("Empresa no encontrada para el usuario con ID: " + idUsuarioEmpresa);
+        }
+
+        //Obtenemos todas las sucursales de la empresa
+        List<Sucursal> sucursales = sucursalRepository.findByEmpresa_IdEmpresaAndEstado(empresa.getIdEmpresa(), Sucursal.EstadoSucursal.ACTIVA);
+        List<DetalleSucursalesConvenioDTO> detalleSucursalesList = new ArrayList<>();
+
+        for (Sucursal sucursal : sucursales) {
+            List<ConvenioComercioSucursal> convenios = convenioComercioSucursalRepository.findBySucursal_IdSucursalAndEstado(sucursal.getIdSucursal(), ConvenioComercioSucursal.Estado.ACTIVO);
+            List<DetalleSucursalesConvenioDTO.ConvenioSucursalDTO> convenioDTOList = new ArrayList<>();
+
+            for (ConvenioComercioSucursal convenio : convenios) {
+                ComercioAfiliado comercio = convenio.getComercioAfiliado();
+                ComercioAfiliadoDTO comercioDTO = new ComercioAfiliadoDTO(
+                        comercio.getId(),
+                        comercio.getNombreComercial(),
+                        comercio.getRazonSocial(),
+                        comercio.getNit(),
+                        comercio.getTipoComercio(),
+                        comercio.getTelefono(),
+                        comercio.getCorreoContacto(),
+                        comercio.getEstado().name(),
+                        comercio.getFechaRegistro().toString()
+                );
+
+                DetalleSucursalesConvenioDTO.ConvenioSucursalDTO convenioDTO = new DetalleSucursalesConvenioDTO.ConvenioSucursalDTO();
+                convenioDTO.setIdConvenio(convenio.getId());
+                convenioDTO.setHorasGratisMaximo(String.valueOf(convenio.getHorasGratisMaximo()));
+                convenioDTO.setPeriodoCorte(convenio.getPeriodoCorte().name());
+                convenioDTO.setTarifaPorHora(String.valueOf(convenio.getTarifaPorHora()));
+                convenioDTO.setFechaInicioConvenio(convenio.getFechaInicioConvenio().toString());
+                convenioDTO.setFechaFinConvenio(convenio.getFechaFinConvenio().toString());
+                convenioDTO.setEstado(convenio.getEstado().name());
+                convenioDTO.setFechaCreacion(convenio.getFechaCreacion().toString());
+                convenioDTO.setComercioAfiliado(comercioDTO);
+
+                convenioDTOList.add(convenioDTO);
+            }
+
+            DetalleSucursalesConvenioDTO detalleDTO = new DetalleSucursalesConvenioDTO();
+            detalleDTO.setIdSucursal(sucursal.getIdSucursal());
+            detalleDTO.setNombre(sucursal.getNombre());
+            detalleDTO.setDireccionCompleta(sucursal.getDireccionCompleta());
+            detalleDTO.setCiudad(sucursal.getCiudad());
+            detalleDTO.setDepartamento(sucursal.getDepartamento());
+            detalleDTO.setHoraApertura(sucursal.getHoraApertura().toString());
+            detalleDTO.setHoraCierre(sucursal.getHoraCierre().toString());
+            detalleDTO.setCapacidad2Ruedas(sucursal.getCapacidad2Ruedas());
+            detalleDTO.setCapacidad4Ruedas(sucursal.getCapacidad4Ruedas());
+            detalleDTO.setEstado(sucursal.getEstado().name());
+            detalleDTO.setIdUsuarioSucursal(sucursal.getUsuarioSucursal().getIdUsuario());
+            //Usuario sucursal
+            Usuario usuarioSucursal = sucursal.getUsuarioSucursal();
+            Persona persona = usuarioSucursal.getPersona();
+            UsuarioSucursalDTO usuarioDTO = new UsuarioSucursalDTO();
+            usuarioDTO.setNombre(persona.getNombre());
+            usuarioDTO.setApellido(persona.getApellido());
+            usuarioDTO.setFechaNacimiento(persona.getFechaNacimiento().toString());
+            usuarioDTO.setDpi(persona.getDpi());
+            usuarioDTO.setCorreo(persona.getCorreo());
+            usuarioDTO.setTelefono(persona.getTelefono());
+            usuarioDTO.setDireccionCompleta(persona.getDireccionCompleta());
+            usuarioDTO.setCiudad(persona.getCiudad());
+            usuarioDTO.setPais(persona.getPais());
+            usuarioDTO.setCodigoPostal(persona.getCodigoPostal());
+            usuarioDTO.setNombreUsuario(usuarioSucursal.getNombreUsuario());
+            usuarioDTO.setDobleFactorHabilitado(usuarioSucursal.isDobleFactorHabilitado());
+            usuarioDTO.setEstado(usuarioSucursal.getEstado().name());
+            detalleDTO.setUsuario(usuarioDTO);
+            detalleDTO.setConvenios(convenioDTOList);
+            detalleSucursalesList.add(detalleDTO);
+        }
+        return detalleSucursalesList;
+
+
+    }
+
+
     //Obtenemos todos los detalles de los convenios de una sucursal
-    public List<DetalleEmpresaConvenioDTO> getDetalleEmpresaConvenio(Long idUsuarioSucursal) {
+    /*public List<DetalleEmpresaConvenioDTO> getDetalleEmpresaConvenio(Long idUsuarioSucursal) {
         List<DetalleEmpresaConvenioDTO> detalleList = new ArrayList<>();
         //Obtenemos la sucursal por el idUsuarioSucursal
         Sucursal sucursal = sucursalRepository.findByUsuarioSucursal_IdUsuario(idUsuarioSucursal);
@@ -92,7 +182,7 @@ public class GestionComercioAfiliadoService {
         }
         return detalleList;
 
-    }
+    }*/
 
     //Creamos un nuevo comercio afiliado
     @Transactional
@@ -152,14 +242,17 @@ public class GestionComercioAfiliadoService {
         ComercioAfiliado comercioAfiliado = comercioAfiliadoRepository.findById(convenioDTO.getIdComercio())
                 .orElseThrow(() -> new RuntimeException("Comercio afiliado no encontrado con ID: " + convenioDTO.getIdComercio()));
 
-        //Obtenemos el usuario sucursal
-        Usuario usuario = usuarioRepository.findById(convenioDTO.getCreadoPor())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + convenioDTO.getCreadoPor()));
+        //Obtenemos el usuario que crea el convenio
+        Usuario usuario = usuarioRepository.findById(convenioDTO.getCreadoPor()).orElse(null);
+        if (usuario == null) {
+            throw new RuntimeException("Usuario no encontrado con ID: " + convenioDTO.getCreadoPor());
+        }
 
 
-        Sucursal sucursal = sucursalRepository.findByUsuarioSucursal_IdUsuario(usuario.getIdUsuario());
+        //Obtenemos la sucursal
+        Sucursal sucursal = sucursalRepository.findById(convenioDTO.getIdSucursal()).orElse(null);
         if (sucursal == null) {
-            throw new RuntimeException("Sucursal no encontrada para el usuario con ID: " + usuario.getIdUsuario());
+            throw new RuntimeException("Sucursal no encontrada con ID: " + convenioDTO.getIdSucursal());
         }
 
 
@@ -194,6 +287,7 @@ public class GestionComercioAfiliadoService {
     Ejemplo de JSON para crear un convenio
     {
         "idComercio": 1,
+        "idSucursal": 1,
         "horasGratisMaximo": "10",
         "periodoCorte": "MENSUAL",
         "fechaInicioConvenio": "2024-07-01",
