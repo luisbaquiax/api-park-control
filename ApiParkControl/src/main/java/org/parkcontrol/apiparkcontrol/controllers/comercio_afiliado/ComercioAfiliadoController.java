@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/sucursal/comercio-afiliado")
+@RequestMapping("/api/empresa/comercio-afiliado")
 class ComercioAfiliadoController {
 
     private final GestionComercioAfiliadoService gestionComercioAfiliadoService;
@@ -23,7 +23,7 @@ class ComercioAfiliadoController {
         this.gestionComercioAfiliadoService = gestionComercioAfiliadoService;
     }
 
-    //Obtenemos todas las empresas
+    //Obtenemos todas los comercios afiliados
     @GetMapping("/comercio")
     public ResponseEntity<?> getTodasLasEmpresas() {
         try {
@@ -36,11 +36,11 @@ class ComercioAfiliadoController {
         }
     }
 
-    //Obtenemos el detalle de una empresa afiliada por sucursal
-    @GetMapping("/comercio/{idUsuarioSucursal}")
-    public ResponseEntity<?> getDetalleEmpresaConvenioPorSucursal(@PathVariable Long idUsuarioSucursal) {
+    //Obtenemos el detalle de todas las sucursales por empresa
+    @GetMapping("/comercio/{idUsuarioEmpresa}")
+    public ResponseEntity<?> getDetalleEmpresaConvenioPorSucursal(@PathVariable Long idUsuarioEmpresa) {
         try {
-            List<DetalleEmpresaConvenioDTO> detalle = gestionComercioAfiliadoService.getDetalleEmpresaConvenio(idUsuarioSucursal);
+            List<DetalleSucursalesConvenioDTO> detalle = gestionComercioAfiliadoService.getDetallesSucursalesConvenio(idUsuarioEmpresa);
             return ResponseEntity.ok(detalle);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
