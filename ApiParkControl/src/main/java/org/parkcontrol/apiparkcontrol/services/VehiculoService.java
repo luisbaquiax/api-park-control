@@ -5,14 +5,18 @@ import org.parkcontrol.apiparkcontrol.dto.PersonaRequest;
 import org.parkcontrol.apiparkcontrol.dto.messagesuccess.MessageSuccess;
 import org.parkcontrol.apiparkcontrol.dto.vehiculo.VehicleResponsDTO;
 import org.parkcontrol.apiparkcontrol.dto.vehiculo.VehiculoRequestDTO;
+import org.parkcontrol.apiparkcontrol.dto.vehiculo.VehiculosPropietarioDTO;
+import org.parkcontrol.apiparkcontrol.mapper.UsuarioPersonaRolMap;
 import org.parkcontrol.apiparkcontrol.mapper.VehicleMap;
 import org.parkcontrol.apiparkcontrol.models.Persona;
+import org.parkcontrol.apiparkcontrol.models.Usuario;
 import org.parkcontrol.apiparkcontrol.models.Vehiculo;
 import org.parkcontrol.apiparkcontrol.repositories.VehiculoRepository;
 import org.parkcontrol.apiparkcontrol.utils.ErrorApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,32 +28,23 @@ public class VehiculoService {
     private PersonaService personaService;
     @Autowired
     private VehicleMap vehicleMap;
+    @Autowired
+    private UsuarioPersonaRolMap usuarioPersonaRolMap;
+    @Autowired
+    private UsuarioService usuarioService;
 
     @Transactional
-    public MessageSuccess create(PersonaRequest persona, VehiculoRequestDTO vehiculoRequest) {
+    public MessageSuccess create(String dpi, VehiculoRequestDTO vehiculoRequest) {
         Vehiculo vehiculoAux = repository.findByPlaca(vehiculoRequest.getPlaca());
         if (vehiculoAux != null) {
             throw new ErrorApi(401, String.format("El vehiculo ya existe con placa: %s", vehiculoRequest.getPlaca()));
         }
-        Persona personaEncargado = personaService.findByDpi(persona.getDpi());
-        if (personaEncargado == null) {
-            personaEncargado = new Persona();
-            personaEncargado.setIdPersona(null);
-            personaEncargado.setFechaNacimiento(persona.getFechaNacimiento());
-            personaEncargado.setCiudad(persona.getCiudad());
-            personaEncargado.setTelefono(persona.getTelefono());
-            personaEncargado.setNombre(persona.getNombre());
-            personaEncargado.setApellido(persona.getApellido());
-            personaEncargado.setCorreo(persona.getCorreo());
-            personaEncargado.setDireccionCompleta(persona.getDireccionCompleta());
-            personaEncargado.setCodigoPostal(persona.getCodigoPostal());
-            personaEncargado.setPais(persona.getPais());
-            personaEncargado.setDpi(persona.getDpi());
-
-            personaEncargado = personaService.create(personaEncargado);
+        Persona propietario = personaService.findByDpi(dpi);
+        if (propietario == null) {
+            throw new ErrorApi(401, String.format("El propietario con dpi: %s aún no se encuentra registrado.", dpi));
         }
         vehiculoAux = new Vehiculo();
-        vehiculoAux.setPropietario(personaEncargado);
+        vehiculoAux.setPropietario(propietario);
         vehiculoAux.setAnio(vehiculoRequest.getAnio());
         vehiculoAux.setTipoVehiculo(vehiculoRequest.getTipoVehiculo());
         vehiculoAux.setColor(vehiculoRequest.getColor());
@@ -63,8 +58,21 @@ public class VehiculoService {
                 String.format(
                         "Se ha registrado correctamente el vehiculo con placa %s a nombre de la persona %s %s",
                         vehiculoAux.getPlaca(),
-                        personaEncargado.getNombre(),
-                        personaEncargado.getApellido()));
+                        propietario.getNombre(),
+                        propietario.getApellido()));
+    }
+
+    public MessageSuccess update(Long id, VehiculoRequestDTO vehiculo){
+        Vehiculo vehiculoAux = repository.findById(id).orElseThrow(() -> new ErrorApi(401, "El vehiculo no existe"));
+        vehiculoAux.setAnio(vehiculo.getAnio());
+        vehiculoAux.setTipoVehiculo(vehiculo.getTipoVehiculo());
+        vehiculoAux.setColor(vehiculo.getColor());
+        vehiculoAux.setEstado(vehiculo.getEstadoVehiculo());
+        vehiculoAux.setMarca(vehiculo.getMarca());
+        //vehiculoAux.setPlaca(vehiculo.getPlaca());
+        vehiculoAux.setModelo(vehiculo.getModelo());
+        repository.save(vehiculoAux);
+        return new MessageSuccess(201, "El vehiculo se ha actualizado correctamente");
     }
 
     @Transactional
@@ -75,8 +83,14 @@ public class VehiculoService {
         return new MessageSuccess(201, "El vehiculo se ha actualizado correctamente");
     }
 
-    public List<VehicleResponsDTO> getAllByPersona(Long idPersona){
-        return repository.findByPropietarioIdPersona(idPersona).stream().map(vehicleMap::map).toList();
+    public List<VehiculosPropietarioDTO> getAllByPersona(){
+        List<Usuario> users = usuarioService.getUsersByRol("CLIENTE");
+        List<VehiculosPropietarioDTO> reporte = new ArrayList<>();
+        for (Usuario user : users) {
+            List<Vehiculo> vehiculos = repository.findByPropietarioIdPersona(user.getPersona().getIdPersona());
+            reporte.add(new VehiculosPropietarioDTO(usuarioPersonaRolMap.map(user), vehiculos.stream().map(vehicleMap::map).toList()));
+        }
+        return reporte;
     }
 
     public List<VehicleResponsDTO> getAll(){
