@@ -60,4 +60,75 @@ class GestionBackofficeController {
         }
     }
 
+    //Obtener el detalle de las solicitudes temporales de todos los clientes
+    @GetMapping("/solicitudes-temporales/{idBackoffice}")
+    public ResponseEntity<?> obtenerDetalleSolicitudesTemporalesCliente(@PathVariable Long idBackoffice) {
+        try {
+            List<BackOfficeDetalleSolicitudesTemporalDTO> detalleSolicitudes = gestionBackOfficeService.obtenerTodasSolicitudesPermisoTemporal(idBackoffice);
+            return ResponseEntity.ok(detalleSolicitudes);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Error al obtener el detalle de las solicitudes temporales: " + e.getMessage());
+            response.put("status", "error");
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    //Aceptar solicitud temporal
+    @PostMapping("/aceptar-solicitud-temporal")
+    public ResponseEntity<?> aceptarSolicitudPermisoTemporal(
+            @RequestBody ResolverSolicitudTemporalDTO resolverSolicitudPermisoTemporalDTO
+    ) {
+        try {
+            String mensaje = gestionBackOfficeService.aprobarSolicitudPermisoTemporal(resolverSolicitudPermisoTemporalDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", mensaje);
+            response.put("status", "success");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Error al aceptar la solicitud de permiso temporal: " + e.getMessage());
+            response.put("status", "error");
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    //Rechazar solicitud temporal
+    @PostMapping("/rechazar-solicitud-temporal")
+    public ResponseEntity<?> rechazarSolicitudPermisoTemporal(
+            @RequestBody ResolverSolicitudTemporalDTO resolverSolicitudPermisoTemporalDTO
+    ) {
+        try {
+            String mensaje = gestionBackOfficeService.rechazarSolicitudPermisoTemporal(resolverSolicitudPermisoTemporalDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", mensaje);
+            response.put("status", "success");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Error al rechazar la solicitud de permiso temporal: " + e.getMessage());
+            response.put("status", "error");
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    //revocar permiso temporal
+    @PostMapping("/revocar-temporal")
+    public ResponseEntity<?> revocarSolicitudPermisoTemporal(
+            @RequestBody ResolverSolicitudTemporalDTO revocarPermisoTemporalDTO
+    ) {
+        try {
+            String mensaje = gestionBackOfficeService.revocarSolicitudPermisoTemporal(revocarPermisoTemporalDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", mensaje);
+            response.put("status", "success");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Error al revocar el permiso temporal: " + e.getMessage());
+            response.put("status", "error");
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
 }

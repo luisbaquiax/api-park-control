@@ -32,16 +32,16 @@ public class PermisoTemporal {
     @Column(name = "motivo", nullable = false)
     private String motivo;
 
-    @Column(name = "fecha_inicio", nullable = false)
+    @Column(name = "fecha_inicio")
     private LocalDateTime fechaInicio;
 
-    @Column(name = "fecha_fin", nullable = false)
+    @Column(name = "fecha_fin")
     private LocalDateTime fechaFin;
 
     @Column(name = "usos_maximos")
     private Integer usosMaximos;
 
-    @Column(name = "usos_realizados", nullable = false, columnDefinition = "INT DEFAULT 0")
+    @Column(name = "usos_realizados")
     private Integer usosRealizados;
 
     @Column(name = "sucursales_validas")
@@ -52,20 +52,14 @@ public class PermisoTemporal {
     private EstadoPermiso estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "aprobado_por", nullable = false)
+    @JoinColumn(name = "aprobado_por")
     private Usuario aprobadoPor;
 
-    @Column(name = "fecha_aprobacion", nullable = false)
+    @Column(name = "fecha_aprobacion")
     private LocalDateTime fechaAprobacion;
 
     @Column(name = "observaciones")
     private String observaciones;
-
-    @PrePersist
-    private void prePersist() {
-        this.fechaAprobacion = LocalDateTime.now();
-        this.estado = EstadoPermiso.ACTIVO;
-    }
 
     public enum TipoVehiculo {
         DOS_RUEDAS,
@@ -73,7 +67,9 @@ public class PermisoTemporal {
     }
 
     public enum EstadoPermiso {
+        PENDIENTE,
         ACTIVO,
+        RECHAZADO,
         EXPIRADO,
         REVOCADO,
         AGOTADO
