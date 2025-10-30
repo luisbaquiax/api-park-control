@@ -43,7 +43,7 @@ public class Vehiculo {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private EstadoVehiculo estado;
+    private EstadoVehiculo estado = EstadoVehiculo.ACTIVO;
 
     @Column(name = "fecha_registro", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaRegistro = LocalDateTime.now();
@@ -61,12 +61,6 @@ public class Vehiculo {
         INACTIVO,
         VENDIDO,
         ROBADO
-    }
-
-    @PrePersist
-    private void prePersist() {
-        this.fechaRegistro = LocalDateTime.now();
-        this.estado = EstadoVehiculo.ACTIVO;
     }
 
     @PreUpdate

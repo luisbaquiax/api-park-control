@@ -11,4 +11,5 @@ public interface SucursalRepository extends JpaRepository<Sucursal, Long> {
     Sucursal findByUsuarioSucursal_IdUsuario(Long idUsuarioSucursal);
 
 
+    List<Sucursal> findByEmpresa_IdEmpresaAndEstado(Long empresaIdEmpresa, Sucursal.EstadoSucursal estado);
 }

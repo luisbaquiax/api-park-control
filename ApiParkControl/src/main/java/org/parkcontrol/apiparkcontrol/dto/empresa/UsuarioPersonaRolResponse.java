@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UsuarioPersonaRolResponse {
     private Long idUsuario;
+    private Long idPersona;
+    private String dpi;
     private String nombreUsuario;
     private String nombreRol;
     private String nombre;
