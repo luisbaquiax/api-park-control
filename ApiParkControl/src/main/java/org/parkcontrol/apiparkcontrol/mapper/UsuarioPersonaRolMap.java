@@ -13,5 +13,7 @@ public interface UsuarioPersonaRolMap {
     @Mapping(source = "usuario.rol.nombreRol", target = "nombreRol")
     @Mapping(source = "usuario.persona.nombre", target = "nombre")
     @Mapping(source = "usuario.persona.apellido", target = "apellido")
+    @Mapping(source = "usuario.persona.idPersona", target = "idPersona")
+    @Mapping(source = "usuario.persona.dpi", target = "dpi")
     UsuarioPersonaRolResponse map(Usuario usuario);
 }

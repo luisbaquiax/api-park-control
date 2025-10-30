@@ -8,5 +8,4 @@ import org.parkcontrol.apiparkcontrol.dto.PersonaRequest;
 @NoArgsConstructor
 public class RegisterVehicleDTO {
     private VehiculoRequestDTO vehiculo;
-    private PersonaRequest persona;
 }
