@@ -28,7 +28,7 @@ public class TarifaBase {
     private BigDecimal precioPorHora;
 
     @Column(name = "moneda", nullable = false, length = 3)
-    private String moneda;
+    private String moneda = "GTQ";
 
     @Column(name = "fecha_vigencia_inicio", nullable = false)
     private LocalDate fechaVigenciaInicio;
@@ -42,12 +42,6 @@ public class TarifaBase {
 
     @Column(name = "fecha_creacion", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
-
-    @PrePersist
-    private void prePersist() {
-        this.fechaVigenciaInicio = LocalDate.now();
-        this.fechaCreacion = LocalDateTime.now();
-    }
 
     public enum EstadoTarifaBase {
         VIGENTE,
