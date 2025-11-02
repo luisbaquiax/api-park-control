@@ -43,7 +43,6 @@ public class GestionTarifaController {
 
     @PutMapping("/desactivar/{idTarifa}/{idUsuario}")
     public MessageSuccess desactivar(@PathVariable Long idTarifa, @PathVariable Long idUsuario) {
-        tarifaBaseService.desactivarTarifaBase(idTarifa, idUsuario);
-        return new MessageSuccess(500,"Tarifa desactivada correctamente");
+        return tarifaBaseService.desactivarTarifaBase(idTarifa, idUsuario);
     }
 }

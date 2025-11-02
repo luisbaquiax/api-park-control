@@ -137,7 +137,7 @@ public class TarifaBaseService {
     }
 
     @Transactional
-    public TarifaBase desactivarTarifaBase(Long idTarifaBase, Long idUsuarioResponsable) {
+    public MessageSuccess desactivarTarifaBase(Long idTarifaBase, Long idUsuarioResponsable) {
         TarifaBase tarifaBase = tarifaBaseRepository.findById(idTarifaBase).orElseThrow(()-> new ErrorApi(404, "Tarifa no encontrada"));
         tarifaBase.setEstado(TarifaBase.EstadoTarifaBase.HISTORICO);
         BitacoraTarifaBase bitacora = new BitacoraTarifaBase();
@@ -148,7 +148,8 @@ public class TarifaBaseService {
         bitacora.setPrecioNuevo(BigDecimal.ZERO);
         bitacora.setObservaciones(String.format("Desactivación de la tarifa #%s.", tarifaBase.getIdTarifaBase().toString()));
         bitacoraTarifaBaseRepository.save(bitacora);
-        return tarifaBaseRepository.save(tarifaBase);
+        tarifaBaseRepository.save(tarifaBase);
+        return new MessageSuccess(201,"Tarifa desactivada correctamente");
     }
 
     /**
