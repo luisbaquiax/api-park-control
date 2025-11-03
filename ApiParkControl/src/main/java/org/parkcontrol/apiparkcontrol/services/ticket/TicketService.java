@@ -30,6 +30,8 @@ public class TicketService {
     @Autowired
     private SucursalRepository sucursalRepository;
     @Autowired
+    private PermisoTemporalRepository permisoTemporalRepository;
+    @Autowired
     private StringRedisTemplate redisTemplate;
 
     private GeneradorCodigo generadorCodigo;
@@ -70,29 +72,68 @@ public class TicketService {
         } else {
             throw new ErrorApi(400,"Tipo de vehículo no reconocido");
         }
-
+        //buscar al cliente propietario del vehículo
         Persona cliente = vehiculo.getPropietario();
         Usuario usarioCliente = usuarioRepository.findByPersona(cliente);
         if(usarioCliente == null) {
             throw new ErrorApi(404,"El propietario del vehiculo no tiene una cuenta de usuario asociada");
         }
 
+        //revisar si existe permiso temporal activo para el vehículo
+        PermisoTemporal permisoAplicado = permisoTemporalRepository
+                .findByPlacaTemporalAndTipoVehiculoPermitidoAndEstadoAndFechaInicioBeforeAndFechaFinAfter(
+                        vehiculo.getPlaca(),
+                        PermisoTemporal.TipoVehiculo.valueOf(vehiculo.getTipoVehiculo().toString()),
+                        PermisoTemporal.EstadoPermiso.ACTIVO,
+                        ticketRequest.getFechaHoraEntrada(),
+                        ticketRequest.getFechaHoraEntrada()
+                )
+                .stream()
+                // Filtramos si el permiso tiene un límite de usos y no se ha agotado
+                .filter(p -> p.getUsosMaximos() == null || p.getUsosRealizados() < p.getUsosMaximos())
+                .findFirst()
+                .orElse(null);
+
+
+
         //revisamos si el vehículo tiene una suscripción activa
+        /*
         Suscripcion suscripcionActual = suscripcionRepository.findByVehiculo_IdAndEstado(vehiculo.getId(), Suscripcion.EstadoSuscripcion.ACTIVA)
                 .stream()
                 .findFirst()
                 .orElse(null);
+                */
+        Suscripcion suscripcionAplicada = null;
+        PermisoTemporal permisoTemporalFinal = null;
 
+        if(permisoAplicado != null) {
+            suscripcionAplicada = permisoAplicado.getSuscripcion();
+            permisoTemporalFinal = permisoAplicado;
+        } else {
+            suscripcionAplicada = suscripcionRepository.findByVehiculo_IdAndEstado(vehiculo.getId(), Suscripcion.EstadoSuscripcion.ACTIVA)
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        //revisar si el vehiculo tiene un ticket activo
+        List<Ticket> ticketActivos = ticketRepository.findByVehiculo_IdAndEstado(vehiculo.getId(), Ticket.EstadoTicket.ACTIVO);
+        if(!ticketActivos.isEmpty()) {
+            throw new ErrorApi(400, "El vehículo ya tiene un ticket activo. No se puede generar un nuevo ticket hasta que se cierre el ticket actual.");
+        }
+
+        //crear ticket
         Ticket ticket = new Ticket();
         ticket.setEstado(Ticket.EstadoTicket.ACTIVO);
         //definir tipo cliente según tenga o no suscripción activa
-        Ticket.TipoCliente tipoCliente = suscripcionActual != null ? Ticket.TipoCliente.SUSCRIPTOR : Ticket.TipoCliente.SIN_SUSCRIPCION;
+        Ticket.TipoCliente tipoCliente = suscripcionAplicada != null ? Ticket.TipoCliente.SUSCRIPTOR : Ticket.TipoCliente.SIN_SUSCRIPCION;
         ticket.setTipoCliente(tipoCliente);
         ticket.setFechaCreacion(LocalDateTime.now());
         ticket.setFechaHoraEntrada(ticketRequest.getFechaHoraEntrada());
-        ticket.setPermisoTemporal(null);
+        //por ahora no se asigna permiso temporal al crear el ticket
+        ticket.setPermisoTemporal(permisoTemporalFinal);
         ticket.setSucursal(sucursal);
-        ticket.setSuscripcion(suscripcionActual);
+        ticket.setSuscripcion(suscripcionAplicada);
         ticket.setVehiculo(vehiculo);
         ticket.setEnlaceSmsWhatsapp("");
 
@@ -106,27 +147,34 @@ public class TicketService {
 
         ticket.setFolioNumerico(folioNumerico);
         ticket.setCodigoQr(codigoQr);
+
+        //actualizamos el uso realizado del permiso temporal si aplica
+        if(permisoAplicado != null) {
+            permisoAplicado.setUsosRealizados(permisoAplicado.getUsosRealizados() + 1);
+            permisoTemporalRepository.save(permisoAplicado);
+        }
         //guardar qr en redis
         //TODO: definir tiempo de expiración del código qr en redis según la política de la empresa
         //guardar ticket
-        Ticket ticketGuardado = ticketRepository.save(ticket);
-        Long idSuscripcion = (ticketGuardado.getSuscripcion() == null) ? null : ticketGuardado.getSuscripcion().getId();
-        Long idPermiso = (ticketGuardado.getPermisoTemporal() == null) ? null : ticketGuardado.getPermisoTemporal().getId();
+        return getTicketResponseDTO(ticketRepository.save(ticket));
+    }
+
+    private TicketResponseDTO getTicketResponseDTO(Ticket ticket) {
         return new TicketResponseDTO(
-                ticketGuardado.getId(),
-                ticketGuardado.getFolioNumerico(),
-                ticketGuardado.getSucursal().getIdSucursal(),
-                ticketGuardado.getVehiculo().getId(),
-                idSuscripcion,
-                idPermiso,
-                ticketGuardado.getTipoCliente().toString(),
-                ticketGuardado.getFechaHoraEntrada(),
-                ticketGuardado.getFechaHoraSalida(),
-                ticketGuardado.getDuracionMinutos(),
-                ticketGuardado.getCodigoQr(),
-                ticketGuardado.getEnlaceSmsWhatsapp(),
-                ticketGuardado.getEstado().toString(),
-                ticketGuardado.getFechaCreacion()
+                ticket.getId(),
+                ticket.getFolioNumerico(),
+                ticket.getSucursal().getIdSucursal(),
+                ticket.getVehiculo().getId(),
+                (ticket.getSuscripcion() == null) ? null : ticket.getSuscripcion().getId(),
+                (ticket.getPermisoTemporal() == null) ? null : ticket.getPermisoTemporal().getId(),
+                ticket.getTipoCliente().toString(),
+                ticket.getFechaHoraEntrada(),
+                ticket.getFechaHoraSalida(),
+                ticket.getDuracionMinutos(),
+                ticket.getCodigoQr(),
+                ticket.getEnlaceSmsWhatsapp(),
+                ticket.getEstado().toString(),
+                ticket.getFechaCreacion()
         );
     }
 }
