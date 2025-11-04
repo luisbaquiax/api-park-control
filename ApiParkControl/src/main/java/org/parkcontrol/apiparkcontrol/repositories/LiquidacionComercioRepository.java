@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface LiquidacionComercioRepository extends JpaRepository<LiquidacionComercio, Long> {
     List<LiquidacionComercio> findByCorteCaja_IdCorteCaja(Long idCorteCaja);
+
+    List<LiquidacionComercio> findByComercio_Id(Long comercioId);
 }

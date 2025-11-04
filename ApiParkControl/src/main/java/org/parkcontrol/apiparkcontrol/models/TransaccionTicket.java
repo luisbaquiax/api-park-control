@@ -75,3 +75,7 @@ public class TransaccionTicket {
         CANCELADO
     }
 }
+
+/*Ejemplo SQL para tabla transaccion_ticket
+INSERT INTO transaccion_ticket (id_ticket, tipo_cobro, horas_cobradas, horas_gratis_comercio, tarifa_aplicada, subtotal, descuento, total, metodo_pago, numero_transaccion, estado, fecha_transaccion) VALUES (1, 'TARIFA_NORMAL', 2.00, 0.00, 5.00, 10.00, 0.00, 10.00, 'EFECTIVO', 'TX123456', 'PAGADO', '2024-06-15 12:00:00');
+ */

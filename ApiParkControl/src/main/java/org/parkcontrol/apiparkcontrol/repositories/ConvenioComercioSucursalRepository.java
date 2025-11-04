@@ -13,4 +13,6 @@ public interface ConvenioComercioSucursalRepository extends JpaRepository<Conven
     List<ConvenioComercioSucursal> findBySucursal_Empresa_IdEmpresa(Long idEmpresa);
 
     List<ConvenioComercioSucursal> findBySucursal_Empresa_IdEmpresaAndEstado(Long sucursalEmpresaIdEmpresa, ConvenioComercioSucursal.Estado estado);
+
+    List<ConvenioComercioSucursal> findByComercioAfiliado_IdAndEstado(Long idComercioAfiliado, ConvenioComercioSucursal.Estado estado);
 }

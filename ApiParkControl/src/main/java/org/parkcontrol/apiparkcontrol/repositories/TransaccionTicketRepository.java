@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface TransaccionTicketRepository extends JpaRepository<TransaccionTicket, Long> {
     List<TransaccionTicket> findByTicket_Sucursal_Empresa_IdEmpresa(Long ticketSucursalEmpresaIdEmpresa);
+    List<TransaccionTicket> findByTicket_Sucursal_IdSucursal(Long ticketSucursalIdSucursal);
+
+    TransaccionTicket findByTicket_Id(Long id);
 }
