@@ -12,4 +12,6 @@ public interface SuscripcionRepository extends JpaRepository<Suscripcion, Long> 
     List<Suscripcion> findByVehiculo_IdAndEstado(Long vehiculoActual, Suscripcion.EstadoSuscripcion estadoSuscripcion);
 
     List<Suscripcion> getSuscripcionByEmpresa_IdEmpresaAndEstado(Long idEmpresa, Suscripcion.EstadoSuscripcion estadoSuscripcion);
+
+    List<Suscripcion> findByTipoPlan_Id(Long id);
 }

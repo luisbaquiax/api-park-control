@@ -259,8 +259,10 @@ public class GestionLiquidacionService {
                 liquidacion.setTotalHorasOtorgadas(convenio.getHorasGratisMaximo());
                 liquidacion.setTarifaPorHora(convenio.getTarifaPorHora());
 
+                //Hay que calcular el monto total a partir de las horas gratis maximo y la tarifa por hora ademas del periodo de corte, si es diario, semanal, mensual o anual hay que dividir o multiplicar segun corresponda
                 BigDecimal monto = convenio.getHorasGratisMaximo()
-                        .multiply(convenio.getTarifaPorHora());
+                        .multiply(convenio.getTarifaPorHora())
+                        .multiply(calcularMontoPorPeriodo(convenio.getPeriodoCorte()));
 
                 liquidacion.setMontoTotal(monto);
                 liquidacion.setEstado(LiquidacionComercio.EstadoLiquidacion.PENDIENTE);
@@ -343,4 +345,19 @@ public class GestionLiquidacionService {
         }
     }
 
+    private BigDecimal calcularMontoPorPeriodo(ConvenioComercioSucursal.PeriodoCorte periodoCorte) {
+        //El monto esta basado en un mes. si es diario se divide entre 30, si es semanal entre 4, si es mensual no se modifica, si es anual se multiplica por 12
+        switch (periodoCorte) {
+            case DIARIO:
+                return BigDecimal.valueOf(1.0 / 30.0);
+            case SEMANAL:
+                return BigDecimal.valueOf(1.0 / 4.0);
+            case MENSUAL:
+                return BigDecimal.ONE;
+            case ANUAL:
+                return BigDecimal.valueOf(12);
+            default:
+                throw new IllegalArgumentException("Periodo de corte no válido");
+        }
+    }
 }
