@@ -37,6 +37,4 @@ public class EmpresaController {
     public List<EmpresaResponse> getCompaniesByUser(@PathVariable Long idUser) {
         return empresaService.getComapniesByUser(idUser).stream().map(mapper::map).toList();
     }
-
-
 }

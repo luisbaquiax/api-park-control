@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 public interface TarifaBaseRepository extends JpaRepository<TarifaBase, Long> {
@@ -21,7 +22,7 @@ public interface TarifaBaseRepository extends JpaRepository<TarifaBase, Long> {
                 SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END
                 FROM TarifaBase t
                 WHERE t.empresa.idEmpresa = :idEmpresa
-                AND t.estado = 'VIGENTE' OR t.estado = 'PROGRAMADO'
+                AND (t.estado = 'VIGENTE' OR t.estado = 'PROGRAMADO')
                 AND (
                     (:fechaInicio BETWEEN t.fechaVigenciaInicio AND t.fechaVigenciaFin)
                     OR (:fechaFin BETWEEN t.fechaVigenciaInicio AND t.fechaVigenciaFin)
@@ -37,4 +38,6 @@ public interface TarifaBaseRepository extends JpaRepository<TarifaBase, Long> {
     TarifaBase findByEstadoAndEmpresa_IdEmpresa(TarifaBase.EstadoTarifaBase estado, Long idEmpresa);
 
     TarifaBase findByEmpresa_IdEmpresaAndEstado(Long idEmpresa, TarifaBase.EstadoTarifaBase estadoTarifaBase);
+
+    List<TarifaBase> getTarifaBaseByEmpresa_IdEmpresa(Long empresaIdEmpresa);
 }

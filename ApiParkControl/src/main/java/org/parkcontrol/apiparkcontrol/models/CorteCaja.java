@@ -59,11 +59,7 @@ public class CorteCaja {
     @Column(name = "estado", nullable = false)
     private Estado estado;
 
-    @PrePersist
-    protected void onCreate() {
-        fechaGeneracion = LocalDateTime.now();
-        estado = Estado.PRELIMINAR;
-    }
+
 
     public enum Periodo {
         DIARIO, SEMANAL, MENSUAL, ANUAL;

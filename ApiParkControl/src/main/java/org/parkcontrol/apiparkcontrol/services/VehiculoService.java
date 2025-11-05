@@ -62,6 +62,7 @@ public class VehiculoService {
                         propietario.getApellido()));
     }
 
+    @Transactional
     public MessageSuccess update(Long id, VehiculoRequestDTO vehiculo){
         Vehiculo vehiculoAux = repository.findById(id).orElseThrow(() -> new ErrorApi(401, "El vehiculo no existe"));
         vehiculoAux.setAnio(vehiculo.getAnio());

@@ -37,6 +37,7 @@ public class Ticket {
     @JoinColumn(name = "id_permiso_temporal")
     private PermisoTemporal permisoTemporal;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_cliente", nullable = false)
     private TipoCliente tipoCliente;
 
@@ -49,23 +50,18 @@ public class Ticket {
     @Column(name = "duracion_minutos")
     private Integer duracionMinutos;
 
-    @Column(name = "codigo_qr")
+    @Column(name = "codigo_qr", columnDefinition = "TEXT")
     private String codigoQr;
 
     @Column(name = "enlace_sms_whatsapp")
     private String enlaceSmsWhatsapp;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private EstadoTicket estado;
+    private EstadoTicket estado = EstadoTicket.ACTIVO;
 
     @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
-
-    @PrePersist
-    private void prePersist() {
-        this.fechaCreacion = LocalDateTime.now();
-        this.estado = EstadoTicket.ACTIVO;
-    }
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     public enum EstadoTicket {
         ACTIVO,
@@ -78,3 +74,9 @@ public class Ticket {
         SIN_SUSCRIPCION
     }
 }
+
+/*
+Ejemplo sql para insertar un ticket:
+INSERT INTO TICKET (folio_numerico, id_sucursal, id_vehiculo, id_suscripcion, id_permiso_temporal, tipo_cliente, fecha_hora_entrada, fecha_hora_salida, duracion_minutos, codigo_qr, enlace_sms_whatsapp, estado, fecha_creacion)
+VALUES ('1234567890', 1, 1, NULL, NULL, 'SIN_SUSCRIPCION', '2024-06-01 08:00:00', NULL, NULL, 'QR_CODE_EXAMPLE', 'http://example.com/sms', 'ACTIVO', NOW());
+ */

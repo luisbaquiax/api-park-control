@@ -9,4 +9,6 @@ import java.util.List;
 
 public interface TipoPlanRepository extends JpaRepository<TipoPlan, Long> {
     List<TipoPlan> findByEmpresa_IdEmpresaAndActivo(Long empresaIdEmpresa, TipoPlan.EstadoConfiguracion activo);
+
+    List<TipoPlan> findByEmpresa_IdEmpresa(Long empresaIdEmpresa);
 }
