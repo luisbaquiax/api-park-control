@@ -6,5 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.math.BigDecimal;
 
 public interface AcreditacionHorasComercioRepository extends JpaRepository<AcreditacionHorasComercio, Long> {
+   
     AcreditacionHorasComercio findByTicket_Id(Long ticketId);
+  
+    List<AcreditacionHorasComercio>  findByConvenio_ComercioAfiliado_Id(Long comercioAfiliadoId);
 }

@@ -44,3 +44,7 @@ public class OcupacionSucursal {
     @Column(name = "porcentaje_ocupacion_4r", precision = 5, scale = 2, nullable = false)
     private BigDecimal porcentajeOcupacion4R;
 }
+
+/*Ejemplo sql para datos de ocupacion_sucursal
+INSERT INTO ocupacion_sucursal (id_sucursal, fecha_hora, ocupacion_2r, capacidad_2r, ocupacion_4r, capacidad_4r, porcentaje_ocupacion_2r, porcentaje_ocupacion_4r) VALUES (1, '2024-06-15 10:00:00', 30, 100, 20, 80, 30.00, 25.00);
+ */

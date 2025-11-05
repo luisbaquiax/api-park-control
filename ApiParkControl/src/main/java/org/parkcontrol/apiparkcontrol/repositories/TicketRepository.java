@@ -29,4 +29,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Optional<Ticket> findByCodigoQrAndEstado(String codigoQr, Ticket.EstadoTicket estado);
 
     Optional<Ticket> findByVehiculo_PlacaAndEstado(String placa, Ticket.EstadoTicket estado);
+    List<Ticket> findBySuscripcion_Id(Long idSuscripcion);
+  
 }
