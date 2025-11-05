@@ -229,16 +229,17 @@ public class SuscripcionClienteService {
             throw new IllegalArgumentException("Tipo de plan no encontrado o inactivo");
         }
 
-        //Validar que el vehiculo no tenga una suscripción activa con el mismo tipo de plan en la misma empresa
+        //Validar que el vehiculo no tenga una suscripción activa with el mismo tipo de plan en la misma empresa
         List<Suscripcion> suscripcionesExistentes = suscripcionRepository.findByUsuario_IdUsuario(nuevaSuscripcionDTO.getIdCliente());
         for (Suscripcion suscripcion : suscripcionesExistentes) {
             if (suscripcion.getEmpresa().getIdEmpresa().equals(empresa.getIdEmpresa()) &&
                 suscripcion.getTipoPlan().getId().equals(tipoPlan.getId()) &&
-                suscripcion.getEstado() == Suscripcion.EstadoSuscripcion.ACTIVA) {
+                suscripcion.getEstado() == Suscripcion.EstadoSuscripcion.ACTIVA &&
+                vehiculo.getId().equals(suscripcion.getVehiculo().getId())
+            ) {
                 throw new IllegalArgumentException("El vehículo ya tiene una suscripción activa con el mismo tipo de plan en esta empresa");
             }
         }
-
 
         //Crear la nueva suscripción
         Suscripcion nuevaSuscripcion = new Suscripcion();
@@ -252,6 +253,13 @@ public class SuscripcionClienteService {
             throw new IllegalArgumentException("No hay una tarifa base vigente para la empresa seleccionada");
         }
         nuevaSuscripcion.setTarifaBaseReferencia(tarifaBase);
+
+        // Validar periodo contratado antes de asignar
+       /* try {
+            nuevaSuscripcion.setPeriodoContratado(Suscripcion.PeriodoContratado.valueOf(nuevaSuscripcionDTO.getPeriodoContratado()));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Periodo contratado no válido");
+        }*/
         nuevaSuscripcion.setPeriodoContratado(Suscripcion.PeriodoContratado.valueOf(nuevaSuscripcionDTO.getPeriodoContratado()));
         nuevaSuscripcion.setDescuentoAplicado(BigDecimal.valueOf(0));
         //Calculamos el precio del plan según el periodo contratado
@@ -264,9 +272,9 @@ public class SuscripcionClienteService {
             BigDecimal precioAnualConDescuento = precioPlan.multiply(BigDecimal.valueOf(12)).subtract(descuentoAnual);
             nuevaSuscripcion.setPrecioPlan(precioAnualConDescuento);
             nuevaSuscripcion.setDescuentoAplicado(descuentoAnual);
-        } else {
+        } /*else {
             throw new IllegalArgumentException("Periodo contratado no válido");
-        }
+        }*/
         nuevaSuscripcion.setHorasMensualesIncluidas(tipoPlan.getHorasMensuales());
         nuevaSuscripcion.setHorasConsumidas(BigDecimal.valueOf(0));
         nuevaSuscripcion.setFechaInicio(LocalDateTime.now());
@@ -303,13 +311,18 @@ public class SuscripcionClienteService {
         if (suscripcion == null) {
             throw new IllegalArgumentException("Suscripción no encontrada");
         }
+
+        // Validar periodo contratado antes de procesar
+        if (!renovarSuscripcionDTO.getNuevoPeriodoContratado().equals("MENSUAL") && 
+            !renovarSuscripcionDTO.getNuevoPeriodoContratado().equals("ANUAL")) {
+            throw new IllegalArgumentException("Periodo contratado no válido");
+        }
+
         //Actualizar la fecha fin según el nuevo periodo contratado
         if (renovarSuscripcionDTO.getNuevoPeriodoContratado().equals("MENSUAL")) {
             suscripcion.setFechaFin(suscripcion.getFechaFin().plusMonths(1));
         } else if (renovarSuscripcionDTO.getNuevoPeriodoContratado().equals("ANUAL")) {
             suscripcion.setFechaFin(suscripcion.getFechaFin().plusYears(1));
-        } else {
-            throw new IllegalArgumentException("Periodo contratado no válido");
         }
 
         suscripcionRepository.save(suscripcion);
@@ -326,8 +339,6 @@ public class SuscripcionClienteService {
         historialPagoSuscripcionRepository.save(historialPago);
 
         return "Suscripción renovada con éxito";
-
-
     }
 
 
