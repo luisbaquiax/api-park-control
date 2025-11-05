@@ -44,6 +44,7 @@ public class GeneradorCodigo {
         byte[] pngData = pngOutputStream.toByteArray();
 
         String base64Image = Base64.getEncoder().encodeToString(pngData);
-        return "{\"qr\":\"data:image/png;base64," + base64Image + "\"}";
+        //return "{\"qr\":\"data:image/png;base64," + base64Image + "\"}";
+        return "data:image/png;base64," + base64Image;
     }
 }

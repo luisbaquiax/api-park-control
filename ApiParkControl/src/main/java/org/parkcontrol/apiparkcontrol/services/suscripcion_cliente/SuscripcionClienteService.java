@@ -233,8 +233,10 @@ public class SuscripcionClienteService {
         List<Suscripcion> suscripcionesExistentes = suscripcionRepository.findByUsuario_IdUsuario(nuevaSuscripcionDTO.getIdCliente());
         for (Suscripcion suscripcion : suscripcionesExistentes) {
             if (suscripcion.getEmpresa().getIdEmpresa().equals(empresa.getIdEmpresa()) &&
-                suscripcion.getTipoPlan().getId().equals(tipoPlan.getId()) &&
-                suscripcion.getEstado() == Suscripcion.EstadoSuscripcion.ACTIVA) {
+                    suscripcion.getTipoPlan().getId().equals(tipoPlan.getId()) &&
+                    suscripcion.getEstado() == Suscripcion.EstadoSuscripcion.ACTIVA &&
+                    vehiculo.getId().equals(suscripcion.getVehiculo().getId())
+            ) {
                 throw new IllegalArgumentException("El vehículo ya tiene una suscripción activa con el mismo tipo de plan en esta empresa");
             }
         }

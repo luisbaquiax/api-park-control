@@ -3,6 +3,7 @@ package org.parkcontrol.apiparkcontrol.dto.ticket;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.parkcontrol.apiparkcontrol.models.Vehiculo;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +14,10 @@ public class TicketResponseDTO {
     private Long id;
     private String folioNumerico;
     private Long idSucursal;
+    private String nombreSucursal;
     private Long idVehiculo;
+    private String placa;
+    private Vehiculo.TipoVehiculo tipoVehiculo;
     private Long idSuscripcion;
     private Long idPermisoTemporal;
     private String tipoCliente;
