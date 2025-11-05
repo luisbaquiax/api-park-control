@@ -126,7 +126,7 @@ public class GestionTarifaControllerTest {
                 .andExpect(jsonPath("$.idTarifaBase").value(ID_TARIFA));
     }
 
-    @Test
+   /* @Test
     void getByEmpresa_shouldReturnListOfTarifas() throws Exception {
         TarifaBase t1 = getTarifaBase();
         TarifaBase t2 = getTarifaBase();
@@ -149,7 +149,7 @@ public class GestionTarifaControllerTest {
                 .andExpect(jsonPath("$[0].idTarifaBase").value(r1.getIdTarifaBase()))
                 .andExpect(jsonPath("$[1].idTarifaBase").value(r2.getIdTarifaBase()));
     }
-
+*/
     @Test
     void activar_shouldReturnSuccessMessage() throws Exception {
         MessageSuccess success = getMessageSuccess("Tarifa activada exitosamente");

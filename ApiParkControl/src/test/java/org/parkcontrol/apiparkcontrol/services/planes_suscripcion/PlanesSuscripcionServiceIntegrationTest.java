@@ -443,6 +443,7 @@ class PlanesSuscripcionServiceIntegrationTest {
     }
 
     private String generateUniqueDpi() {
-        return String.valueOf(System.currentTimeMillis()).substring(0, 13);
+        // Usar nanoTime para mayor unicidad
+        return String.valueOf(System.nanoTime()).substring(0, 13);
     }
 }
