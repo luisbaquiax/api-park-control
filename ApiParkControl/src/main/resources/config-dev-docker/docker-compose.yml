@@ -22,5 +22,31 @@ services:
       S3_BUCKET_FRONTEND: ${S3_BUCKET_FRONTEND}
       S3_BUCKET_BACKEND: ${S3_BUCKET_BACKEND}
       RUTA_LOCAL: ${RUTA_LOCAL}
+
+      # redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
+    depends_on:
+      - redis
+    networks:
+      - app_net
+
+  redis:
+    image: redis:7.2
+    container_name: park_control_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_net
+
+volumes:
+  redis_data:
+
+networks:
+  app_net:
