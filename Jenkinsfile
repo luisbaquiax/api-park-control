@@ -29,12 +29,13 @@ pipeline {
             }
         }
 
-        //stage('Compile & Test') {
-        //     steps {
-        //         sh 'cd mvn test'
-        //     }
-        //}
-
+        stage('Compile & Test') {
+            steps {
+                dir('ApiParkControl') {
+                    sh 'mvn clean test'
+                }
+            }
+        }
 
         stage('Deploy') {
              steps {
