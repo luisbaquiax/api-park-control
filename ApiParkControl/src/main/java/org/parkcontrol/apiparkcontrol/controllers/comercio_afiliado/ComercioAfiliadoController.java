@@ -112,7 +112,7 @@ class ComercioAfiliadoController {
             return ResponseEntity.status(201).body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Error al crear el nuevo convenio comercio sucursal: " + e.getMessage());
+            response.put("message", "Error al crear el nuevo convenio comercio sucursal: " + e);
             response.put("status", "error");
             return ResponseEntity.status(500).body(response);
         }

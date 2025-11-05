@@ -17,8 +17,8 @@ public class BitacoraTarifaController {
     @Autowired
     private BitacoraTarifaBaseMapper mapper;
 
-    @GetMapping("/get-by-empresa/{idEmpresa}")
-    public List<BitacoraTarifaBaseResponse> getByEmpresa(@PathVariable Long idEmpresa) {
-        return bitacoraTarifaBaseService.getByEmpresa(idEmpresa).stream().map(mapper::map).toList();
+    @GetMapping("/get-by-empresa/{idUsuario}")
+    public List<BitacoraTarifaBaseResponse> getByEmpresa(@PathVariable Long idUsuario) {
+        return bitacoraTarifaBaseService.getByEmpresa(idUsuario).stream().map(mapper::map).toList();
     }
 }

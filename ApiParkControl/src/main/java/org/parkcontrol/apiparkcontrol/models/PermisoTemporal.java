@@ -72,6 +72,7 @@ public class PermisoTemporal {
         RECHAZADO,
         EXPIRADO,
         REVOCADO,
-        AGOTADO
+        AGOTADO,
+        RECHAZADO
     }
 }

@@ -50,7 +50,7 @@ public class Ticket {
     @Column(name = "duracion_minutos")
     private Integer duracionMinutos;
 
-    @Column(name = "codigo_qr")
+    @Column(name = "codigo_qr", columnDefinition = "TEXT")
     private String codigoQr;
 
     @Column(name = "enlace_sms_whatsapp")
@@ -58,16 +58,10 @@ public class Ticket {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false)
-    private EstadoTicket estado;
+    private EstadoTicket estado = EstadoTicket.ACTIVO;
 
     @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
-
-    @PrePersist
-    private void prePersist() {
-        this.fechaCreacion = LocalDateTime.now();
-        this.estado = EstadoTicket.ACTIVO;
-    }
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 
     public enum EstadoTicket {
         ACTIVO,
