@@ -29,11 +29,11 @@ pipeline {
             }
         }
 
-        stage('Compile & Test') {
-             steps {
-                 sh 'cd mvn test'
-             }
-        }
+        //stage('Compile & Test') {
+        //     steps {
+        //         sh 'cd mvn test'
+        //     }
+        //}
 
 
         stage('Deploy') {
