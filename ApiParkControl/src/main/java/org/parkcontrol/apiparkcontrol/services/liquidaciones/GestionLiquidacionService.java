@@ -55,12 +55,11 @@ public class GestionLiquidacionService {
                 new RuntimeException("Usuario no encontrado"));
 
         //Obtenemos la empresa del usuario
-        Empresa empresa = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa).getFirst();
-
-        //verificamos que la empresa exista
-        if (empresa == null) {
+        List<Empresa> empresas = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa);
+        if (empresas.isEmpty()) {
             throw new RuntimeException("La empresa no existe");
         }
+        Empresa empresa = empresas.get(0);
 
         //Obtenemos las sucursales de la empresa
         List<Sucursal> sucursales = sucursalRepository.findByEmpresaIdEmpresa(empresa.getIdEmpresa());
@@ -117,7 +116,11 @@ public class GestionLiquidacionService {
                 new RuntimeException("Usuario no encontrado"));
 
         //Obtenemos la empresa del usuario
-        Empresa empresa = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa).getFirst();
+        List<Empresa> empresas = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa);
+        if (empresas.isEmpty()) {
+            throw new RuntimeException("La empresa no existe");
+        }
+        Empresa empresa = empresas.get(0);
 
 
         //verificamos que la empresa exista
@@ -168,14 +171,14 @@ public class GestionLiquidacionService {
                 new RuntimeException("Usuario no encontrado"));
 
         //Obtenemos la empresa del usuario
-        Empresa empresa = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa).getFirst();
-
-        //verificamos que la empresa exista
-        if (empresa == null) {
+        List<Empresa> empresas = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa);
+        if (empresas.isEmpty()) {
             throw new RuntimeException("La empresa no existe");
         }
+        Empresa empresa = empresas.get(0);
+
         //Obtenemos las transacciones de tickets asociadas a la empresa
-        List<TransaccionTicket> transaccionTickets = transaccionTicketRepository.findByTicket_Sucursal_Empresa_IdEmpresa(idUsuarioEmpresa);
+        List<TransaccionTicket> transaccionTickets = transaccionTicketRepository.findByTicket_Sucursal_Empresa_IdEmpresa(empresa.getIdEmpresa());
         List<DetalleTransaccionTicketDTO> detalleTransaccionTicketDTOList = new ArrayList<>();
         for (TransaccionTicket transaccionTicket : transaccionTickets) {
             DetalleTransaccionTicketDTO detalleTransaccionTicketDTO = new DetalleTransaccionTicketDTO();
@@ -207,12 +210,11 @@ public class GestionLiquidacionService {
                 new RuntimeException("Usuario no encontrado"));
 
         //Obtenemos la empresa del usuario
-        Empresa empresa = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa).getFirst();
-
-        //verificamos que la empresa exista
-        if (empresa == null) {
+        List<Empresa> empresas = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa);
+        if (empresas.isEmpty()) {
             throw new RuntimeException("La empresa no existe");
         }
+        Empresa empresa = empresas.get(0);
 
         //Obtenemos los convenios de comercio sucursal asociados a la empresa
         List<ConvenioComercioSucursal> convenios = convenioComercioSucursalRepository.findBySucursal_Empresa_IdEmpresaAndEstado(empresa.getIdEmpresa(), ConvenioComercioSucursal.Estado.ACTIVO);

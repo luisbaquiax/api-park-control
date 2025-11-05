@@ -61,7 +61,6 @@ public class TransaccionTicket {
     @PrePersist
     protected void onCreate() {
         fechaTransaccion = LocalDateTime.now();
-        estado = Estado.PENDIENTE;
     }
 
     public enum TipoCobro {

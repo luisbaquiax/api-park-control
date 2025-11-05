@@ -161,10 +161,11 @@ public class GestionEmpresaFlotillaService {
     //Obtener detalle de empresas de flotilla
     public DetalleEmpresaFlotillaDTO obtenerDetalleEmpresasFlotilla(Long idUsuarioEmpresa) {
         // Obtener la empresa asociada al usuario
-        Empresa empresaGeneral = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa).getFirst();
-        if (empresaGeneral == null) {
+        List<Empresa> empresas = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioEmpresa);
+        if (empresas.isEmpty()) {
             throw new RuntimeException("Empresa no encontrada para el usuario proporcionado.");
         }
+        Empresa empresaGeneral = empresas.get(0);
 
 
         //La unica forma de acceder a la empresa es atraves del PlanCorporativo a traves del tipo de plan
