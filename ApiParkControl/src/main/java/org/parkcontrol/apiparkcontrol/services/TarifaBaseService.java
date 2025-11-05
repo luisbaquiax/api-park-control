@@ -2,20 +2,17 @@ package org.parkcontrol.apiparkcontrol.services;
 
 import jakarta.transaction.Transactional;
 import org.parkcontrol.apiparkcontrol.dto.empresa.TarifaBaseResponse;
-import org.parkcontrol.apiparkcontrol.models.BitacoraTarifaBase;
-import org.parkcontrol.apiparkcontrol.models.Empresa;
-import org.parkcontrol.apiparkcontrol.models.TarifaBase;
-import org.parkcontrol.apiparkcontrol.models.Usuario;
-import org.parkcontrol.apiparkcontrol.repositories.BitacoraTarifaBaseRepository;
-import org.parkcontrol.apiparkcontrol.repositories.EmpresaRepository;
-import org.parkcontrol.apiparkcontrol.repositories.TarifaBaseRepository;
-import org.parkcontrol.apiparkcontrol.repositories.UsuarioRepository;
+import org.parkcontrol.apiparkcontrol.dto.messagesuccess.MessageSuccess;
+import org.parkcontrol.apiparkcontrol.models.*;
+import org.parkcontrol.apiparkcontrol.repositories.*;
 import org.parkcontrol.apiparkcontrol.utils.ErrorApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TarifaBaseService {
@@ -28,16 +25,24 @@ public class TarifaBaseService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private EmpresaRepository empresaRepository;
+    @Autowired
+    private TarifaSucursalRepository tarifaSucursalRepository;
 
     @Transactional
     public TarifaBase create(TarifaBaseResponse tarifaBaseResponse, Long idUsuarioResponsable) {
-        Empresa empresa = empresaRepository.findById(tarifaBaseResponse.getIdEmpresa()).orElseThrow(()-> new ErrorApi(404, "Empresa no encontrada"));
+
+        Empresa empresa = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuarioResponsable).stream().findFirst()
+                .orElseThrow(() -> new ErrorApi(403, "El usuario no tiene una empresa asociada"));
+
+        if (!empresa.getUsuarioEmpresa().getIdUsuario().equals(idUsuarioResponsable)) {
+            throw new ErrorApi(403, "El usuario no tiene permisos para crear una tarifa en esta empresa");
+        }
 
         boolean existeSolapamiento = tarifaBaseRepository.existeSolapamiento(
                 empresa.getIdEmpresa(),
                 tarifaBaseResponse.getFechaVigenciaInicio(),
                 tarifaBaseResponse.getFechaVigenciaFin());
-        if(existeSolapamiento){
+        if (existeSolapamiento) {
             throw new ErrorApi(400, String.format("Ya existe la tarifa de %s %s de la fecha del %s al %s.",
                     tarifaBaseResponse.getMoneda(),
                     tarifaBaseResponse.getPrecioPorHora().toString(),
@@ -47,15 +52,19 @@ public class TarifaBaseService {
 
         TarifaBase tarifaBase = new TarifaBase();
         tarifaBase.setEmpresa(empresa);
-        tarifaBase.setMoneda(tarifaBaseResponse.getMoneda());
         tarifaBase.setPrecioPorHora(tarifaBaseResponse.getPrecioPorHora());
         tarifaBase.setFechaVigenciaInicio(tarifaBaseResponse.getFechaVigenciaInicio());
         tarifaBase.setFechaVigenciaFin(tarifaBaseResponse.getFechaVigenciaFin());
-        tarifaBase.setEstado(tarifaBaseResponse.getEstado());
+
+        if (tarifaBaseResponse.getFechaVigenciaInicio().equals(LocalDate.now())) {
+            tarifaBase.setEstado(TarifaBase.EstadoTarifaBase.VIGENTE);
+        } else if (tarifaBaseResponse.getFechaVigenciaInicio().isAfter(LocalDate.now())) {
+            tarifaBase.setEstado(TarifaBase.EstadoTarifaBase.PROGRAMADO);
+        }
 
         BitacoraTarifaBase bitacoraTarifaBase = new BitacoraTarifaBase();
         bitacoraTarifaBase.setTarifaBase(tarifaBase);
-        Usuario usuario = usuarioRepository.findById(idUsuarioResponsable).orElseThrow(()-> new ErrorApi(404, "Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findById(idUsuarioResponsable).orElseThrow(() -> new ErrorApi(404, "Usuario no encontrado"));
         bitacoraTarifaBase.setUsuarioResponsable(usuario);
         bitacoraTarifaBase.setAccion(BitacoraTarifaBase.Accion.CREACION);
         bitacoraTarifaBase.setPrecioAnterior(BigDecimal.ZERO);
@@ -68,64 +77,123 @@ public class TarifaBaseService {
 
     @Transactional
     public TarifaBase update(TarifaBaseResponse tarifaBaseResponse, Long idUsuarioResponsable) {
-        TarifaBase tarifaBase = tarifaBaseRepository.findById(tarifaBaseResponse.getIdTarifaBase()).orElseThrow(()-> new ErrorApi(404, "Tarifa no encontrada"));
+        TarifaBase tarifaBase = tarifaBaseRepository.findById(tarifaBaseResponse.getIdTarifaBase()).orElseThrow(() -> new ErrorApi(404, "Tarifa no encontrada"));
 
         //creamos una bitacora
         BitacoraTarifaBase bitacora = new BitacoraTarifaBase();
         bitacora.setTarifaBase(tarifaBase);
-        Usuario usuario = usuarioRepository.findById(idUsuarioResponsable).orElseThrow(()-> new ErrorApi(404, "Usuario no encontrado"));
+        Usuario usuario = usuarioRepository.findById(idUsuarioResponsable).orElseThrow(() -> new ErrorApi(404, "Usuario no encontrado"));
         bitacora.setUsuarioResponsable(usuario);
 
-        if(tarifaBase.getFechaVigenciaInicio().equals(tarifaBaseResponse.getFechaVigenciaInicio())
-                && tarifaBase.getFechaVigenciaFin().equals(tarifaBaseResponse.getFechaVigenciaFin())) {
-            tarifaBase.setPrecioPorHora(tarifaBaseResponse.getPrecioPorHora());
-            //guardamos la bitacora
+        if (!tarifaBaseResponse.getPrecioPorHora().equals(tarifaBase.getPrecioPorHora())) {
+            bitacora.setAccion(BitacoraTarifaBase.Accion.ACTUALIZACION);
             bitacora.setPrecioAnterior(tarifaBase.getPrecioPorHora());
             bitacora.setPrecioNuevo(tarifaBaseResponse.getPrecioPorHora());
-            bitacora.setAccion(BitacoraTarifaBase.Accion.ACTUALIZACION);
-        }else{
-            if(tarifaBaseRepository.existeSolapamiento(tarifaBaseResponse.getIdEmpresa(), tarifaBaseResponse.getFechaVigenciaInicio(), tarifaBaseResponse.getFechaVigenciaFin())) {
-                throw new ErrorApi(400, String.format("Ya existe la tarifa de %s %s de la fecha del %s al %s.",
-                        tarifaBase.getMoneda(),
-                        tarifaBase.getPrecioPorHora().toString(),
-                        tarifaBase.getFechaVigenciaInicio().toString(),
-                        tarifaBase.getFechaVigenciaFin().toString()));
-            }
-        }
+            bitacora.setObservaciones(String.format("Cambio de precio de la tarifa #%s de Q.%s a Q.%s.",
+                    tarifaBase.getIdTarifaBase().toString(),
+                    tarifaBase.getPrecioPorHora().toString(),
+                    tarifaBaseResponse.getPrecioPorHora().toString()
+            ));
 
-        tarifaBase.setFechaVigenciaInicio(tarifaBaseResponse.getFechaVigenciaInicio());
-        tarifaBase.setFechaVigenciaFin(tarifaBaseResponse.getFechaVigenciaFin());
-        //activar tarifa programado
-        if(tarifaBaseResponse.getFechaVigenciaInicio().isAfter(LocalDate.now()) ||
-        tarifaBaseResponse.getFechaVigenciaFin().isEqual(LocalDate.now())){
-            tarifaBase.setEstado(TarifaBase.EstadoTarifaBase.PROGRAMADO);
-            bitacora.setAccion(BitacoraTarifaBase.Accion.ACTUALIZACION);
-        }else{
-            tarifaBase.setEstado(TarifaBase.EstadoTarifaBase.VIGENTE);
-            bitacora.setAccion(BitacoraTarifaBase.Accion.ACTIVACION);
+            tarifaBase.setEstado(TarifaBase.EstadoTarifaBase.HISTORICO);
+
+            TarifaBase nuevaTarifa = new TarifaBase();
+            nuevaTarifa.setEmpresa(tarifaBase.getEmpresa());
+            nuevaTarifa.setPrecioPorHora(tarifaBaseResponse.getPrecioPorHora());
+            nuevaTarifa.setFechaVigenciaInicio(tarifaBaseResponse.getFechaVigenciaInicio());
+            nuevaTarifa.setFechaVigenciaFin(tarifaBaseResponse.getFechaVigenciaFin());
+            nuevaTarifa.setEstado(TarifaBase.EstadoTarifaBase.VIGENTE);
+            // Guardamos la nueva tarifa
+            tarifaBaseRepository.save(nuevaTarifa);
+            // Guardamos la bitacora de la actualizacion
+            bitacoraTarifaBaseRepository.save(bitacora);
         }
-        //guardamos la bitacora
-        bitacoraTarifaBaseRepository.save(bitacora);
 
         return tarifaBaseRepository.save(tarifaBase);
     }
 
     @Transactional
-    public TarifaBase desactivarTarifaBase(Long idTarifaBase, Long idUsuarioResponsable) {
-        TarifaBase tarifaBase = tarifaBaseRepository.findById(idTarifaBase).orElseThrow(()-> new ErrorApi(404, "Tarifa no encontrada"));
+    public MessageSuccess activarTarifaBase(Long idTarifaBase, Long idUsuarioResponsable) {
+        TarifaBase tarifaBase = tarifaBaseRepository.findById(idTarifaBase).orElseThrow(() -> new ErrorApi(404, "Tarifa no encontrada"));
+
+        if (!tarifaBase.getFechaVigenciaInicio().equals(LocalDate.now())) {
+            throw new ErrorApi(409, "No se puede activar la tarifa antes de su fecha de inicio de vigencia.");
+        }
+
+        tarifaBase.setEstado(TarifaBase.EstadoTarifaBase.VIGENTE);
+        BitacoraTarifaBase bitacora = new BitacoraTarifaBase();
+        bitacora.setTarifaBase(tarifaBase);
+        bitacora.setUsuarioResponsable(usuarioRepository.findById(idUsuarioResponsable).orElseThrow(() -> new ErrorApi(404, "Usuario no encontrado")));
+        bitacora.setAccion(BitacoraTarifaBase.Accion.ACTIVACION);
+        bitacora.setPrecioAnterior(BigDecimal.ZERO);
+        bitacora.setPrecioNuevo(tarifaBase.getPrecioPorHora());
+        bitacora.setObservaciones(String.format("Activación de la tarifa #%s.", tarifaBase.getIdTarifaBase().toString()));
+        bitacoraTarifaBaseRepository.save(bitacora);
+        tarifaBaseRepository.save(tarifaBase);
+        return new MessageSuccess(200, "Tarifa activada correctamente");
+    }
+
+    @Transactional
+    public MessageSuccess desactivarTarifaBase(Long idTarifaBase, Long idUsuarioResponsable) {
+        TarifaBase tarifaBase = tarifaBaseRepository.findById(idTarifaBase).orElseThrow(() -> new ErrorApi(404, "Tarifa no encontrada"));
         tarifaBase.setEstado(TarifaBase.EstadoTarifaBase.HISTORICO);
         BitacoraTarifaBase bitacora = new BitacoraTarifaBase();
         bitacora.setTarifaBase(tarifaBase);
-        bitacora.setUsuarioResponsable(usuarioRepository.findById(idUsuarioResponsable).orElseThrow(()-> new ErrorApi(404, "Usuario no encontrado")));
+        bitacora.setUsuarioResponsable(usuarioRepository.findById(idUsuarioResponsable).orElseThrow(() -> new ErrorApi(404, "Usuario no encontrado")));
         bitacora.setAccion(BitacoraTarifaBase.Accion.DESACTIVACION);
         bitacora.setPrecioAnterior(tarifaBase.getPrecioPorHora());
         bitacora.setPrecioNuevo(BigDecimal.ZERO);
+        bitacora.setObservaciones(String.format("Desactivación de la tarifa #%s.", tarifaBase.getIdTarifaBase().toString()));
         bitacoraTarifaBaseRepository.save(bitacora);
-        return tarifaBaseRepository.save(tarifaBase);
+        tarifaBaseRepository.save(tarifaBase);
+        return new MessageSuccess(201, "Tarifa desactivada correctamente");
     }
 
-    public TarifaBase findTarifaBaseByEmpresaIdByEstado(TarifaBase.EstadoTarifaBase estado, Long idEmpresa) {
-        return tarifaBaseRepository.findByEstadoAndEmpresa_IdEmpresa(estado, idEmpresa);
+    /**
+     * Para obtener la tarifa base de una empresa por su estado, principalmente para obtener la vigente
+     *
+     * @param estado    el estado de la tarifa base
+     * @param idUsuario el identificador del usuario que realiza la consulta encargado de la empresa
+     * @return TarifaBase
+     */
+    public TarifaBase findTarifaBaseByEmpresaIdByEstado(TarifaBase.EstadoTarifaBase estado, Long idUsuario) {
+        Empresa empresa = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuario).stream().findFirst()
+                .orElseThrow(() -> new ErrorApi(403, "El usuario no tiene una empresa asociada"));
+        return tarifaBaseRepository.findByEstadoAndEmpresa_IdEmpresa(estado, empresa.getIdEmpresa());
+    }
+
+    public BigDecimal tarifaVigenteSucursal(Sucursal sucursal) {
+        //Opcion 1: buscar tarifa vigente de la sucursal en redis
+        //TODO: implementar busqueda en redis
+        //Opcion 2: buscar tarifa vigente de la sucursal en base de datos
+        Optional<TarifaSucursal> tarifaSucursal = tarifaSucursalRepository.findVigenteBySucursalIdAndFecha(
+                        sucursal.getIdSucursal(),
+                        LocalDate.now().atStartOfDay());
+
+        if (tarifaSucursal.isPresent()) {
+            return tarifaSucursal.get().getPrecioPorHora();
+        }
+        return tarifaBaseVigenteEmpresa(sucursal.getEmpresa());
+    }
+
+    public BigDecimal tarfifaCongelada(Suscripcion suscripcion){
+        return suscripcion.getTarifaBaseReferencia().getPrecioPorHora();
+    }
+
+    public BigDecimal tarifaBaseVigenteEmpresa(Empresa empresa) {
+        TarifaBase tarifaBase = tarifaBaseRepository.findByEstadoAndEmpresa_IdEmpresa(
+                TarifaBase.EstadoTarifaBase.VIGENTE,
+                empresa.getIdEmpresa());
+        if (tarifaBase == null) {
+            throw new ErrorApi(404, "No se encontró una tarifa base vigente para la empresa.");
+        }
+        return tarifaBase.getPrecioPorHora();
+    }
+
+    public List<TarifaBase> findAllByEmpresa(Long idUsuario) {
+        Empresa empresa = empresaRepository.findByUsuarioEmpresa_IdUsuario(idUsuario).stream().findFirst()
+                .orElseThrow(() -> new ErrorApi(403, "El usuario no tiene una empresa asociada"));
+        return tarifaBaseRepository.getTarifaBaseByEmpresa_IdEmpresa(empresa.getIdEmpresa());
     }
 
 }

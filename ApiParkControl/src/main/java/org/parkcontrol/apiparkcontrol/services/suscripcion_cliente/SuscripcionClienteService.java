@@ -236,6 +236,7 @@ public class SuscripcionClienteService {
                 suscripcion.getTipoPlan().getId().equals(tipoPlan.getId()) &&
                 suscripcion.getEstado() == Suscripcion.EstadoSuscripcion.ACTIVA &&
                 vehiculo.getId().equals(suscripcion.getVehiculo().getId())
+
             ) {
                 throw new IllegalArgumentException("El vehículo ya tiene una suscripción activa con el mismo tipo de plan en esta empresa");
             }

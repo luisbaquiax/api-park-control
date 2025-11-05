@@ -39,6 +39,7 @@ public class Suscripcion {
     @JoinColumn(name = "id_tarifa_base_referencia", nullable = false)
     private TarifaBase tarifaBaseReferencia;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "periodo_contratado", nullable = false)
     private PeriodoContratado periodoContratado;
 
